@@ -51,9 +51,8 @@ const App = () => {
         }
       }
       }>
-    <Drawer.Screen name='Home' component={HomeScreen} />
-    <Drawer.Screen name='Profile' component={ProfileScreen} />
-    <Drawer.Screen name='User' component={UserScreen} />
+    <Drawer.Screen name='Home' component={StackNav} />
+
   </Drawer.Navigator>
   
 </NavigationContainer>
