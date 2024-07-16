@@ -8,7 +8,6 @@ function ProfileScreen(props){
 
         <Text style={styles.headingStyle}>React Native </Text>
         <Text style={styles.textStyle}>This is Profile screen </Text>
-        <Text style={styles.textStyle}>{props.route.params.name} </Text>
         <Button title='User' onPress={()=> props.navigation.navigate('User')}/>
         </View>
     )
