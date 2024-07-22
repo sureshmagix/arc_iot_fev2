@@ -13,6 +13,7 @@ import ProfileScreen from './src/screens/ProfileScreen';
 import UserScreen from './src/screens/UserScreen';
 import Icon from 'react-native-vector-icons/Entypo';
 import DrawerContent from './DrawerContent';
+import SmsScreen from './src/screens/SmsScreen';
 
 const StackNav = () => {
   const Stack = createNativeStackNavigator();
@@ -41,6 +42,21 @@ const StackNav = () => {
         }}}/>
       <Stack.Screen name="Profile" component={ProfileScreen} />
       <Stack.Screen name="User" component={UserScreen} />
+      <Stack.Screen name="SmsScreen" component={SmsScreen}  options={
+          {
+            title: 'SMS Command',
+            headerLeft: () => {
+              return (
+                <Icon
+                  name="menu"
+                  onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+                  size={30}
+                  color="#fff"
+                />
+              );
+            },
+          }
+        }/>
     </Stack.Navigator>
   );
 };
