@@ -3,7 +3,6 @@ import Svg, { Path, Ellipse, G } from 'react-native-svg';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Config from 'react-native-config';
 import MQTT from 'sp-react-native-mqtt';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
 import { Alert } from 'react-native';
 const Light = () => {
@@ -13,115 +12,11 @@ const Light = () => {
   const [mobileNumber, setMobileNumber] = useState('');
   const [isTouchable, setIsTouchable] = useState(true);
   const [ls, setLs] = useState('');
-  const fetchStoredMobile = async () => {
-    try {
-      const value = await AsyncStorage.getItem('mobileNumber');
-      if (value !== null) {
-        setMobileNumber(value);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
 
-  useEffect(() => {
-    const connectMqtt = async (topic) => {
-      try {
-        const client = await MQTT.createClient({
-          uri:Config.MQTT_URL,// 'mqtt://13.233.116.176:1883',
-          clientId: 'light_client_id',
-          keepalive: 10,
-          cleanSession: true,
-        });
-
-        client.on('connect', () => {
-          console.log('MQTT connected');
-          setMqttClient(client);
-          client.subscribe(mobileNumber+'/data', 0);
-        });
-
-        client.on('message', function (msg) {
-          console.log('MQTT Message Received:', msg);
-          const userData = JSON.parse(msg.data);
-          setLs(userData.ls);
-          console.log(`${userData.ms} in motor`)
-          if (msg.topic === (mobileNumber+'/data')) {
-            let newColor = 'blue';
-            if (userData.ls === 'OFF') {
-              newColor = 'grey';
-              setInfo('Light OFF');
-            } else if (userData.ls === 'ON') {
-              newColor = 'yellow';
-              setInfo('Light ON');
-            } else {
-              setInfo('WAITING');
-            }
-            setIconColor(newColor);
-            setIsTouchable(true);
-          }
-        });
-
-        client.on('error', (err) => {
-          console.log('MQTT error:', err);
-        });
-
-        client.connect();
-      } catch (error) {
-        console.error('MQTT connection error:', error);
-      }
-    };
-
-    if (mobileNumber) {
-      connectMqtt(mobileNumber);
-    }
-  }, [mobileNumber]);
-
-  useEffect(() => {
-    fetchStoredMobile();
-  }, []);
-
-  const handleLightOn = () => {
-    if (mqttClient && mqttClient.isConnected()) {
-      Alert.alert(
-        'Confirmation',
-        'Do you want to use Light?',
-        [
-          {
-            text: 'Cancel',
-            onPress: () => console.log('Cancel Pressed'),
-            style: 'cancel',
-          },
-          {
-            text: 'OK',
-            onPress: () => {
-              setIconColor('blue');
-              setIsTouchable(false);
-              setInfo('WAITING');
-              mqttClient.publish(mobileNumber+'/command', '{\n  \"trigger\":\"light\"\n}', 0, false);
-              Toast.show({
-                type: 'success',
-                text1: 'COMMAND SENT',
-                text2: 'Please Wait for Response !!!',
-                visibilityTime: 3000,
-              });
-            },
-          },
-        ],
-        { cancelable: false }
-      );
-    } else {
-      console.warn('MQTT client not connected');
-      ToastAndroid.showWithGravity(
-        'MQTT client not connected',
-        ToastAndroid.SHORT,
-        ToastAndroid.CENTER
-      );
-    }
-  };
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={handleLightOn} disabled={!isTouchable}>
+      <TouchableOpacity disabled={!isTouchable}>
       <Svg width="90" height="90" viewBox="0 0 128 128">
         <Ellipse cx="64" cy="116.87" rx="12.09" ry="7.13" fill="#424242" />
         <Path 

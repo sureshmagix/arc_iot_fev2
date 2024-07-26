@@ -16,7 +16,6 @@ import DrawerContent from './DrawerContent';
 import SmsScreen from './Src/screens/SmsScreen';
 import LoginPage from './Src/screens/Login&Register/LoginScreen';
 import LoginScreen from './Src/screens/Login&Register/LoginScreen';
-import RegisterScreen from './Src/screens/Login&Register/RegisterScreen';
 
 const StackNav = () => {
   const Stack = createNativeStackNavigator();
@@ -93,14 +92,10 @@ const DrawerNav=()=>{
 }
 
 const App = () => {
-  const Stack = createNativeStackNavigator();
+  
   return (
     <NavigationContainer>
-
-      {/* <Stack.Screen name="Login" component={LoginScreen} /> 
-      <Stack.Screen name="Register" component={RegisterScreen} /> */}
-<DrawerNav />
-
+      <DrawerNav/>
     </NavigationContainer>
   );
 };

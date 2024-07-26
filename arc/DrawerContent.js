@@ -15,7 +15,7 @@ const DrawerList = [
   {icon: 'account-multiple', label: 'Profile', navigateTo: 'Profile'},
   {icon: 'account-group', label: 'User', navigateTo: 'User'},
   {icon: 'engine', label: 'Command', navigateTo: 'MqttScreen'},
-  // {icon: 'water-pump', label: 'Status', navigateTo: 'DeviceScreen'},
+  {icon: 'water-pump', label: 'Login', navigateTo: 'LoginScreen'},
   {icon: 'message-text', label: 'SMS', navigateTo: 'SmsScreen'},
   {icon: 'cellphone-basic', label: 'Call Starter', navigateTo: 'CallScreen'},
 ];
