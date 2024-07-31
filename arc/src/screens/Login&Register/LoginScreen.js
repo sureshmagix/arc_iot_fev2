@@ -6,7 +6,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Entypo from 'react-native-vector-icons/Entypo';
 
-function Login(props) {
+function LoginPage(props) {
 
     const emailUs = async () => {
     };
@@ -104,4 +104,4 @@ function Login(props) {
     );
 }
 
-export default Login;
+export default LoginPage;

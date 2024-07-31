@@ -8,15 +8,15 @@ import {
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {createDrawerNavigator} from '@react-navigation/drawer';
 
-import HomeScreen from './Src/screens/HomeScreen';
-import ProfileScreen from './Src/screens/ProfileScreen';
-import UserScreen from './Src/screens/UserScreen';
+import HomeScreen from './src/screens/HomeScreen';
+import ProfileScreen from './src/screens/ProfileScreen';
+import UserScreen from './src/screens/UserScreen';
 import Icon from 'react-native-vector-icons/Entypo';
 import DrawerContent from './DrawerContent';
-import SmsScreen from './Src/screens/SmsScreen';
-import LoginPage from './Src/screens/Login&Register/LoginScreen';
-import LoginScreen from './Src/screens/Login&Register/LoginScreen';
-import RegisterScreen from './Src/screens/Login&Register/RegisterScreen';
+import SmsScreen from './src/screens/SmsScreen';
+import LoginPage from './src/screens/Login&Register/LoginScreen';
+
+import RegisterScreen from './src/screens/Login&Register/RegisterScreen';
 
 const StackNav = () => {
   const Stack = createNativeStackNavigator();
@@ -60,7 +60,7 @@ const StackNav = () => {
             },
           }
         }/>
-            <Stack.Screen name="Login" component={LoginScreen}  options={
+            <Stack.Screen name="Login" component={LoginPage}  options={
           {
             title: 'SMS Command',
             headerLeft: () => {
@@ -96,11 +96,11 @@ const App = () => {
   const Stack = createNativeStackNavigator();
   return (
     <NavigationContainer>
-
-      {/* <Stack.Screen name="Login" component={LoginScreen} /> 
-      <Stack.Screen name="Register" component={RegisterScreen} /> */}
-<DrawerNav />
-
+<Stack.Navigator>
+      {/* <Stack.Screen name="LoginScreen" component={LoginPage} />  */}
+      <Stack.Screen name="Register" component={RegisterScreen} />
+{/* <DrawerNav /> */}
+</Stack.Navigator>
     </NavigationContainer>
   );
 };

@@ -16,14 +16,14 @@ import CircularProgress from 'react-native-circular-progress-indicator';
 import MQTT from 'sp-react-native-mqtt';
 import axios from 'axios';
 import {useFocusEffect} from '@react-navigation/native';
-import Pump from '../Components/Pump'
-import InternetConnectionStatusIcon from '../Components/InternetConnectionStatus_icon';
-import Motor from '../Components/Motor';
-import ICSAlert from '../Components/ICSAlert';
-import ICSTryagain from '../Components/ICSTryagain';
-import Mode from '../Components/Mode';
-import MotorLeft from '../Components/CardComponents/MotorLeft';
-import Light from '../Components/Light';
+import Pump from '../components/Pump'
+import InternetConnectionStatusIcon from '../components/InternetConnectionStatus_icon';
+import Motor from '../components/Motor';
+import ICSAlert from '../components/ICSAlert';
+import ICSTryagain from '../components/ICSTryagain';
+import Mode from '../components/Mode';
+import MotorLeft from '../components/CardComponents/MotorLeft';
+import Light from '../components/Light';
 import {RadioButton} from 'react-native-paper';
 import Config from 'react-native-config';
 
