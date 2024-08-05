@@ -19,7 +19,7 @@ import Toast from 'react-native-toast-message';
 
 
 
-function Register({props}) {
+function RegisterPage({props}) {
   const [name, setName] = useState('');
   const [nameVerify, setNameVerify] = useState(false);
   const [email, setEmail] = useState('');
@@ -75,8 +75,7 @@ function Register({props}) {
 
 
   function handleName(e) {
-    //const nameVar = e.nativeEvent.text;
-    const nameVar = 'ab';
+    const nameVar = e.nativeEvent.text;
     setName(nameVar);
     setNameVerify(false);
 
@@ -85,8 +84,7 @@ function Register({props}) {
     }
   }
   function handleEmail(e) {
-    //const emailVar = e.nativeEvent.text;
-    const emailVar = 'ab@email.com';
+    const emailVar = e.nativeEvent.text;
     setEmail(emailVar);
     setEmailVerify(false);
     if (/^[\w.%+-]+@[\w.-]+\.[a-zA-Z]{2,}$/.test(emailVar)) {
@@ -95,8 +93,7 @@ function Register({props}) {
     }
   }
   function handleMobile(e) {
-    //const mobileVar = e.nativeEvent.text;
-    const mobileVar = '9962577674';
+    const mobileVar = e.nativeEvent.text;
     setMobile(mobileVar);
     setMobileVerify(false);
     if (/[6-9]{1}[0-9]{9}/.test(mobileVar)) {
@@ -105,8 +102,7 @@ function Register({props}) {
     }
   }
   function handlePassword(e) {
-    //const passwordVar = e.nativeEvent.text;
-    const passwordVar = 'suresh123';
+    const passwordVar = e.nativeEvent.text;
     setPassword(passwordVar);
     setPasswordVerify(false);
     if (/(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}/.test(passwordVar)) {
@@ -244,4 +240,4 @@ function Register({props}) {
     </ScrollView>
   );
 }
-export default Register;
+export default RegisterPage;
