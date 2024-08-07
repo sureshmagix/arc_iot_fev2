@@ -1,16 +1,14 @@
 import React from 'react';
 import { View, Text,Button, StyleSheet } from 'react-native';
 
-function HomeScreen(props){
+function ProfileScreen(props){
     console.log(props);
-
     return(
         <View style={styles.viewStyle}>
 
         <Text style={styles.headingStyle}>React Native </Text>
-        <Text style={styles.textStyle}>This is Home screen  </Text>
-        <Button title='Profile' onPress={()=> props.navigation.navigate('Profile',{name:"suresh"})}/>
-        
+        <Text style={styles.textStyle}>This is Profile screen </Text>
+        <Button title='User' onPress={()=> props.navigation.navigate('User')}/>
         </View>
     )
 }
@@ -36,5 +34,4 @@ const styles = StyleSheet.create({
 
 }
 )
-
-export default HomeScreen;
+export default ProfileScreen;

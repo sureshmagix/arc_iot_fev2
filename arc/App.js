@@ -8,6 +8,8 @@ import {
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {createDrawerNavigator} from '@react-navigation/drawer';
 
+import {useEffect, useState} from 'react';
+
 import HomeScreen from './src/screens/HomeScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import UserScreen from './src/screens/UserScreen';
@@ -15,37 +17,112 @@ import Icon from 'react-native-vector-icons/Entypo';
 import DrawerContent from './DrawerContent';
 import SmsScreen from './src/screens/SmsScreen';
 import LoginPage from './src/screens/Login&Register/LoginScreen';
-
+import Toast, {BaseToast, ErrorToast} from 'react-native-toast-message';
 import RegisterScreen from './src/screens/Login&Register/RegisterScreen';
+import UpdateProfile from './src/screens/Login&Register/UpdateProfile/UpdateProfile';
+import CallScreen from './src/screens/CallScreen';
+
+const toastConfig = {
+  success: props => (
+    <BaseToast
+      {...props}
+      style={{
+        borderLeftColor: 'green',
+        borderLeftWidth: 7,
+        width: '90%',
+        height: 70,
+        borderRightColor: 'green',
+        borderRightWidth: 7,
+      }}
+      contentContainerStyle={{paddingHorizontal: 15}}
+      text1Style={{
+        fontSize: 17,
+        fontWeight: '700',
+      }}
+      text2Style={{
+        fontSize: 14,
+      }}
+    />
+  ),
+  /*
+    Overwrite 'error' type,
+    by modifying the existing `ErrorToast` component
+  */
+  error: props => (
+    <ErrorToast
+      {...props}
+      text2NumberOfLines={3}
+      style={{
+        borderLeftColor: 'red',
+        borderLeftWidth: 7,
+        width: '90%',
+        height: 70,
+        borderRightColor: 'red',
+        borderRightWidth: 7,
+      }}
+      contentContainerStyle={{paddingHorizontal: 15}}
+      text1Style={{
+        fontSize: 17,
+        fontWeight: '700',
+      }}
+      text2Style={{
+        fontSize: 14,
+      }}
+    />
+  ),
+};
 
 const StackNav = () => {
   const Stack = createNativeStackNavigator();
   const navigation = useNavigation();
   return (
     <Stack.Navigator
-      initialRouteName="Home"
       screenOptions={{
-          headerStyle: {
-          backgroundColor: 'blue',
+        statusBarColor: '#0163d2',
+        headerShown: true,
+        headerStyle: {
+          backgroundColor: '#0163d2',
         },
-        statusBarColor: 'blue',
-        headerTintColor: 'white',
+        headerTintColor: '#fff',
         headerTitleAlign: 'center',
-
       }}>
-      <Stack.Screen name="Home" component={HomeScreen} options={{        
-        headerLeft:()=>{
-          return(
-            <Icon 
-            name='menu' 
-            onPress={()=>navigation.dispatch(DrawerActions.openDrawer)}
-            size={30} 
-            color="white" />
-          )
-        }}}/>
-      <Stack.Screen name="Profile" component={ProfileScreen} />
-      <Stack.Screen name="User" component={UserScreen} />
-      <Stack.Screen name="SmsScreen" component={SmsScreen}  options={
+
+<Stack.Screen
+        name="App Home"
+        component={HomeScreen}
+        options={
+          {
+            headerLeft: () => {
+              return (
+                <Icon
+                  name="menu"
+                  onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+                  size={30}
+                  color="#fff"
+                />
+              );
+            },
+          }
+        }
+      />
+      <Stack.Screen name="Profile" component={ProfileScreen} options={{
+          headerShown: false,
+        }} />
+      <Stack.Screen
+        name="User"
+        component={UserScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+            <Stack.Screen
+        name="UpdateProfile"
+        component={UpdateProfile}
+        options={{
+          headerShown: false,
+        }}
+      />
+<Stack.Screen name="SmsScreen" component={SmsScreen}  options={
           {
             title: 'SMS Command',
             headerLeft: () => {
@@ -60,9 +137,10 @@ const StackNav = () => {
             },
           }
         }/>
-            <Stack.Screen name="Login" component={LoginPage}  options={
+  
+  <Stack.Screen name="CallScreen" component={CallScreen}  options={
           {
-            title: 'SMS Command',
+            title: 'Call Starter',
             headerLeft: () => {
               return (
                 <Icon
@@ -75,32 +153,100 @@ const StackNav = () => {
             },
           }
         }/>
+
     </Stack.Navigator>
   );
 };
 
-const DrawerNav=()=>{
+
+const DrawerNav = () => {
   const Drawer = createDrawerNavigator();
   return (
     <Drawer.Navigator
-    drawerContent={props=><DrawerContent {...props}/>}
+      drawerContent={props => <DrawerContent {...props} />}
       screenOptions={{
         headerShown: false,
       }}>
       <Drawer.Screen name="Home" component={StackNav} />
     </Drawer.Navigator>
   );
-}
+};
 
-const App = () => {
+
+const LoginNav = () => {
   const Stack = createNativeStackNavigator();
   return (
-    <NavigationContainer>
-<Stack.Navigator>
-      {/* <Stack.Screen name="LoginScreen" component={LoginPage} />  */}
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}>
+      <Stack.Screen name="Login" component={LoginPage} />
       <Stack.Screen name="Register" component={RegisterScreen} />
-{/* <DrawerNav /> */}
-</Stack.Navigator>
+      <Stack.Screen name="Home" component={DrawerNav} />
+
+    </Stack.Navigator>
+  );
+};
+
+const AdminStack = () => {
+  const Stack = createNativeStackNavigator();
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        options={{
+          statusBarColor: '#0163d2',
+          headerShown: true,
+          headerBackVisible:false,
+          headerStyle: {
+            backgroundColor: '#0163d2',
+          },
+          headerTintColor: '#fff',
+          headerTitleAlign: 'center',
+        }}
+        name="AdminScreen"
+        component={AdminScreen}
+      />
+      <Stack.Screen
+        options={{
+          headerShown: false,
+        }}
+        name="Login"
+        component={LoginNav}
+      />
+    </Stack.Navigator>
+  );
+};
+
+
+
+const App = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userType, setuserType] = useState(false);
+  async function getData() {
+    const data = await AsyncStorage.getItem('isLoggedIn');
+    const userType1 = await AsyncStorage.getItem('userType');
+    console.log(data, 'at app.jsx');
+    setIsLoggedIn(data);
+    setuserType(userType1);
+  }
+
+  useEffect(() => {
+    getData();
+    // setTimeout(() => {
+    //   SplashScreen.hide();
+    // }, 900);
+  }, [isLoggedIn]);
+
+  return (
+    <NavigationContainer>
+ {isLoggedIn && userType == 'Admin' ? (
+        <AdminStack/>
+      ) : isLoggedIn ? (
+        <DrawerNav />
+      ) : (
+        <LoginNav />
+      )}
+      <Toast config={toastConfig} />
     </NavigationContainer>
   );
 };

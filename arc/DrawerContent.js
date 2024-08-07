@@ -11,7 +11,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 
 const DrawerList = [
-  {icon: 'home-outline', label: 'Home', navigateTo: 'Home'},
+  {icon: 'home-outline', label: 'Home', navigateTo: 'App Home'},
   {icon: 'account-multiple', label: 'Profile', navigateTo: 'Profile'},
   {icon: 'account-group', label: 'User', navigateTo: 'User'},
   {icon: 'engine', label: 'Command', navigateTo: 'MqttScreen'},
@@ -22,12 +22,14 @@ const DrawerList = [
 const DrawerLayout = ({icon, label, navigateTo}) => {
   const navigation = useNavigation();
   // console.log(userData);
+  
   return (
     <DrawerItem
       icon={({color, size}) => <Icon name={icon} color={color} size={size} />}
       label={label}
       onPress={() => {
         navigation.navigate(navigateTo);
+        console.log('Navigating to:', navigateTo);
       }}
     />
   );

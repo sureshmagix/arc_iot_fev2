@@ -19,8 +19,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logo: {
-    height: 260,
-    width: 260,
+    height: 150,
+    width: 150,
     marginTop: 30,
   },
   text_footer: {
@@ -42,6 +42,7 @@ const styles = StyleSheet.create({
   textInput: {
     flex: 1,
     marginTop: -12,
+    fontSize:15,
 
     color: '#05375a',
   },
@@ -58,6 +59,7 @@ const styles = StyleSheet.create({
   },
   text_header: {
     color: '#b22222',
+    textAlign: 'center',
     fontWeight: 'bold',
     fontSize: 30,
   },
@@ -119,5 +121,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'black',
   },
+
+  checkboxContainer1: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop:5,
+  },
+  checkbox: {
+    marginRight: 10, // Add margin to the right of the checkbox for spacing
+    color:'crimson'
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
 });
 export default styles;
