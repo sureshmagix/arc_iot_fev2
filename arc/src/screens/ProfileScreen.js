@@ -16,6 +16,7 @@ import {
   import Back from 'react-native-vector-icons/Ionicons';
   import Gender from 'react-native-vector-icons/Foundation';
   import Mobile from 'react-native-vector-icons/Entypo';
+  import Location from 'react-native-vector-icons/Entypo';
   import Error from 'react-native-vector-icons/MaterialIcons';
   import Email from 'react-native-vector-icons/MaterialCommunityIcons';
   import Profession from 'react-native-vector-icons/AntDesign';
@@ -153,7 +154,7 @@ import {
          
           </View>
   
-          <View style={{marginTop: 20, marginHorizontal: 25}}>
+          <View style={{marginTop: 10, marginHorizontal: 25}}>
             <View style={styles.infoMain}>
               <View style={styles.infoCont}>
                 <View style={[styles.infoIconCont, {backgroundColor: '#ff9500'}]}>
@@ -194,17 +195,55 @@ import {
             <View style={styles.infoMain}>
               <View style={styles.infoCont}>
                 <View style={[styles.infoIconCont, {backgroundColor: '#774BBC'}]}>
+                  <Location name="location" size={24} style={{color: 'white'}}  />
+                </View>
+                <View style={styles.infoText}>
+                  <Text style={styles.infoSmall_Text}>Address</Text>
+                  <Text style={styles.infoLarge_Text}>
+                    
+                    {userData.address == '' ||
+                    userData.address == undefined ||
+                    userData.address == null
+                      ? ''
+                      : userData.address}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.infoMain}>
+              <View style={styles.infoCont}>
+                <View style={[styles.infoIconCont, {backgroundColor: '#774BBC'}]}>
+                  <Location name="location" size={24} style={{color: 'white'}}  />
+                </View>
+                <View style={styles.infoText}>
+                  <Text style={styles.infoSmall_Text}>Taluk/Town</Text>
+                  <Text style={styles.infoLarge_Text}>
+                    
+                    {userData.taluk == '' ||
+                    userData.taluk == undefined ||
+                    userData.taluk == null
+                      ? ''
+                      : userData.taluk}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          
+            <View style={styles.infoMain}>
+              <View style={styles.infoCont}>
+                <View style={[styles.infoIconCont, {backgroundColor: '#774BBC'}]}>
                   <Profession name="profile" size={24} style={{color: 'white'}}  />
                 </View>
                 <View style={styles.infoText}>
-                  <Text style={styles.infoSmall_Text}>Profession</Text>
+                  <Text style={styles.infoSmall_Text}>Pincode</Text>
                   <Text style={styles.infoLarge_Text}>
                     
-                    {userData.profession == '' ||
-                    userData.profession == undefined ||
-                    userData.profession == null
+                    {userData.pincode == '' ||
+                    userData.pincode == undefined ||
+                    userData.pincode == null
                       ? ''
-                      : userData.profession}
+                      : userData.pincode}
                   </Text>
                 </View>
               </View>

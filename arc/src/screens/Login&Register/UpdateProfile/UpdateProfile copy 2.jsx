@@ -20,10 +20,8 @@ function UpdateProfile() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [gender, setGender] = useState('');
+  const [profession, setProfession] = useState('');
   const [mobile, setMobile] = useState('');
-  const [address, setAddress] = useState('');
-  const [taluk, setTaluk] = useState('');
-  const [pincode, setPincode] = useState('');
   const route = useRoute();
   const selectPhoto = () => {
     ImagePicker.openPicker({
@@ -47,23 +45,18 @@ function UpdateProfile() {
     setEmail(userData.email);
     setGender(userData.gender);
     setImage(userData.image);
+    setProfession(userData.profession);
     setName(userData.name);
-    setMobile(userData.mobile);
-    setAddress(userData.address);
-    setTaluk(userData.taluk);
-    setPincode(userData.pincode);
-    
+    setMobile(userData.mobile)
   },[]);
   const updateProfile = () => { 
     const formdata = {
       name: name,
       image,
       email,
+      profession,
       mobile,
-      gender,
-      address,
-      taluk,
-      pincode,
+      gender
     };
     console.log(formdata);
     axios
@@ -175,45 +168,18 @@ function UpdateProfile() {
             </View>
           </View>
           <View style={styles.infoEditView}>
-            <Text style={styles.infoEditFirst_text}>Address</Text>
+            <Text style={styles.infoEditFirst_text}>Profession</Text>
             <TextInput
-              placeholder="Address"
-              placeholderTextColor={'#999797'}
-              //keyboardType="numeric"
-              maxLength={20}
-              style={styles.infoEditSecond_text}
-              onChange={e => setAddress(e.nativeEvent.text)}
-              defaultValue={address}
-            />
-          </View>
-
-          <View style={styles.infoEditView}>
-            <Text style={styles.infoEditFirst_text}>Taluk</Text>
-            <TextInput
-              placeholder="Taluk"
+              placeholder="Profession"
               placeholderTextColor={'#999797'}
               //keyboardType="numeric"
               maxLength={10}
               style={styles.infoEditSecond_text}
-              onChange={e => setTaluk(e.nativeEvent.text)}
-              defaultValue={taluk}
+              onChange={e => setProfession(e.nativeEvent.text)}
+              defaultValue={profession}
             />
           </View>
 
-          <View style={styles.infoEditView}>
-            <Text style={styles.infoEditFirst_text}>Pincode</Text>
-            <TextInput
-              placeholder="Pincode"
-              placeholderTextColor={'#999797'}
-              keyboardType="numeric"
-              maxLength={10}
-              style={styles.infoEditSecond_text}
-              onChange={e => setPincode(e.nativeEvent.text)}
-              defaultValue={pincode}
-            />
-          </View>
-
-          
           <View style={styles.infoEditView}>
             <Text style={styles.infoEditFirst_text}>Mobile No</Text>
             <TextInput

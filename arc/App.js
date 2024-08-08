@@ -21,6 +21,7 @@ import Toast, {BaseToast, ErrorToast} from 'react-native-toast-message';
 import RegisterScreen from './src/screens/Login&Register/RegisterScreen';
 import UpdateProfile from './src/screens/Login&Register/UpdateProfile/UpdateProfile';
 import CallScreen from './src/screens/CallScreen';
+import StarterScreen from './src/screens/StarterScreen';
 
 const toastConfig = {
   success: props => (
@@ -115,6 +116,11 @@ const StackNav = () => {
           headerShown: false,
         }}
       />
+
+<Stack.Screen name="StarterScreen" component={StarterScreen} options={{
+          headerShown: false,
+        }} />
+
             <Stack.Screen
         name="UpdateProfile"
         component={UpdateProfile}

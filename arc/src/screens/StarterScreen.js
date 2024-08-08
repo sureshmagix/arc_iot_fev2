@@ -1,14 +1,15 @@
 import React from 'react';
 import { View, Text,Button, StyleSheet } from 'react-native';
 
-function UserScreen(props){
-
+function StarterScreen(props){
+    console.log(props);
     return(
         <View style={styles.viewStyle}>
 
-        <Text style={styles.headingStyle}>Comming Soon</Text>
-        <Text style={styles.textStyle}>This is User screen </Text>
-        <Button title='Home' onPress={()=> props.navigation.navigate('Home')}/>
+        <Text style={styles.headingStyle}>React Native </Text>
+        <Text style={styles.textStyle}>Registered starters screen </Text>
+        
+        <Button title='HOME' onPress={()=> props.navigation.navigate('App Home')}/>
         </View>
     )
 }
@@ -34,5 +35,4 @@ const styles = StyleSheet.create({
 
 }
 )
-
-export default UserScreen;
+export default StarterScreen;

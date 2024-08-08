@@ -21,7 +21,7 @@ export default StyleSheet.create({
     marginTop: 0,
     alignItems: 'center',
     textAlign: 'center',
-    marginTop: 30,
+    marginTop: 10,
   },
   textSign: {
     fontSize: 18,
@@ -90,7 +90,7 @@ export default StyleSheet.create({
     textAlign: 'center',
   },
   infoEditView: {
-    marginTop: 10,
+    marginTop: 5,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',

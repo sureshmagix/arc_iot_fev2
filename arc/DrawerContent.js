@@ -5,7 +5,7 @@ import {Avatar, Title} from 'react-native-paper';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import {useNavigation} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 
@@ -15,7 +15,7 @@ const DrawerList = [
   {icon: 'account-multiple', label: 'Profile', navigateTo: 'Profile'},
   {icon: 'account-group', label: 'User', navigateTo: 'User'},
   {icon: 'engine', label: 'Command', navigateTo: 'MqttScreen'},
-  {icon: 'water-pump', label: 'Login', navigateTo: 'LoginScreen'},
+  {icon: 'water-pump', label: 'Your Starter', navigateTo: 'StarterScreen'},
   {icon: 'message-text', label: 'SMS', navigateTo: 'SmsScreen'},
   {icon: 'cellphone-basic', label: 'Call Starter', navigateTo: 'CallScreen'},
 ];
@@ -47,7 +47,46 @@ const DrawerItems = props => {
     );
   });
 };
+
+
 function DrawerContent(props) {
+  const [storedMobile, setStoredMobile] = useState('');
+  useEffect(() => {
+    // Retrieve the stored mobile number and password when the component mounts
+    const fetchStoredCredentials = async () => {
+        try {
+            const storedMobileNumber = await AsyncStorage.getItem('mobileNumber');
+            
+            if (storedMobileNumber !== null) {
+                setStoredMobile(storedMobileNumber);
+                
+            }
+  
+        } catch (e) {
+            console.error(e);
+        }
+    };
+    fetchStoredCredentials();
+  }, []);
+
+
+
+
+
+
+  const navigation = useNavigation();
+function signOut(){
+  navigation.navigate("Login")
+  AsyncStorage.setItem('isLoggedIn','');
+  AsyncStorage.setItem('token','');
+  
+
+}
+
+
+
+
+
 
   return (
     <View style={{flex: 1}}>
