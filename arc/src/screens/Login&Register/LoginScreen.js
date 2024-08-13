@@ -103,7 +103,7 @@ function LoginScreen(props) {
 
 
     function handleSubmit() {
-        console.log(mobile, password);
+        //console.log(mobile, password);
         const userData = {
             mobile: mobile,
             password: password,
@@ -203,7 +203,7 @@ function LoginScreen(props) {
                 <View style={styles.button}>
                     <TouchableOpacity style={styles.inBut} onPress={() => handleSubmit()}>
                         <View>
-                            <Text style={styles.textSign}>Log in</Text>
+                            <Text style={styles.textSign}>Login</Text>
                         </View>
                     </TouchableOpacity>
                     <View style={{padding:15}}>

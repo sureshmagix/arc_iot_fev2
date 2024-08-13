@@ -22,6 +22,9 @@ import RegisterScreen from './src/screens/Login&Register/RegisterScreen';
 import UpdateProfile from './src/screens/Login&Register/UpdateProfile/UpdateProfile';
 import CallScreen from './src/screens/CallScreen';
 import StarterScreen from './src/screens/StarterScreen';
+import UpdateStarter from './src/screens/UpdateStarter'
+import updateStarter from './src/screens/UpdateStarter';
+import RegisterStarter from './src/screens/RegisterStarter';
 
 const toastConfig = {
   success: props => (
@@ -118,6 +121,14 @@ const StackNav = () => {
       />
 
 <Stack.Screen name="StarterScreen" component={StarterScreen} options={{
+          headerShown: false,
+        }} />
+
+<Stack.Screen name="UpdateStarter" component={updateStarter} options={{
+          headerShown: false,
+        }} />
+
+<Stack.Screen name="RegisterStarter" component={RegisterStarter} options={{
           headerShown: false,
         }} />
 
