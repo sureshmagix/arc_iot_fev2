@@ -13,6 +13,7 @@ import {useEffect, useState} from 'react';
 import HomeScreen from './src/screens/HomeScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import UserScreen from './src/screens/UserScreen';
+import MqttScreen from './src/screens/MqttScreen';
 import Icon from 'react-native-vector-icons/Entypo';
 import DrawerContent from './DrawerContent';
 import SmsScreen from './src/screens/SmsScreen';
@@ -158,6 +159,22 @@ const StackNav = () => {
   <Stack.Screen name="CallScreen" component={CallScreen}  options={
           {
             title: 'Call Starter',
+            headerLeft: () => {
+              return (
+                <Icon
+                  name="menu"
+                  onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+                  size={30}
+                  color="#fff"
+                />
+              );
+            },
+          }
+        }/>
+
+<Stack.Screen name="MqttScreen" component={MqttScreen}  options={
+          {
+            title: 'Command',
             headerLeft: () => {
               return (
                 <Icon
