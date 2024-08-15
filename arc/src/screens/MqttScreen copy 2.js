@@ -70,55 +70,43 @@ const MqttScreen = ({ userID }) => {
 
 
   useEffect(() => {
-    const connectToMqtt = async () => {
-      // Read starter data before connecting
-      await readStarterData();
-  
-      // Connect to MQTT only if starter1 is valid
-      if (starterData.starter1) {
-        console.log('Connecting to MQTT broker...');
-        const onMessageArrived = (msg) => {
-          if (msg && msg.data) {
-            try {
-              const parsedData = JSON.parse(msg.data);
-              console.log('Parsed Data:', parsedData); // Logging the parsed data for debugging
-              
-              // Handle incoming data
-              if (parsedData && Object.keys(parsedData).length > 0) {
-                setUserData(parsedData);
-                data_req(parsedData); // Pass the valid parsed data
-                
-                // Update mm from incoming data
-                if (parsedData.mm) {
-                  setMm(parsedData.mm); // Update mm from incoming data
-                }
-              } else {
-                console.log('Parsed data is null or empty');
-              }
-            } catch (error) {
-              console.error('Failed to parse message data:', error);
-            }
+    readStarterData();
+    
+    console.log('starter1 is set as :'+starter1)
+    const onMessageArrived = (msg) => {
+      if (msg && msg.data) {
+        try {
+          const parsedData = JSON.parse(msg.data);
+          console.log('Parsed Data:', parsedData);  // Logging the parsed data for debugging
+    
+          // Check if parsedData is valid before calling data_req
+          if (parsedData && Object.keys(parsedData).length > 0) {
+            setUserData(parsedData);
+            data_req(parsedData);  // Pass the valid parsed data
+
+                      // Assuming mm is part of parsedData
+          if (parsedData.mm) {
+            setMm(parsedData.mm); // Update mm from incoming data
           }
-        };
-  
-        MQTTClient.create(userID, 
-          [`${starterData.starter1}/data`, `${starterData.starter1}/command`], 
-          {}, 
-          onMessageArrived
-        );
-  
-        console.log("MQTT Client connected to topics:", `${starterData.starter1}/data`, `${starterData.starter1}/command`);
-      } else {
-        console.error('starter1 is not set. Cannot connect to MQTT.');
+          } else {
+            console.log('Parsed data is null or empty');
+          }
+        } catch (error) {
+          console.error('Failed to parse message data:', error);
+        }
       }
-    }
-  
-    connectToMqtt();
-  
-    return () => {
-      // This should trigger the disconnect method
-      MQTTClient.disconnect();
     };
+
+
+    MQTTClient.create(userID,[`${starterData.starter1}`+'/data',`${starterData.starter1}`+'/command'] ,{}, onMessageArrived);
+
+   // MQTTClient.create(userID, `${starterData.starter1}`+'/command',{}, onMessageArrived);
+   // MQTTClient.create(userID, 'bob',{}, onMessageArrived);
+    return () => {
+      MQTTClient.disconnect();  // This should trigger the disconnect method
+    };
+
+   
   }, [userID]);
 
   
