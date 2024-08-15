@@ -39,6 +39,7 @@ const screenWidth = Dimensions.get('window').width;
 const MqttScreen = ({ userID }) => {
   const [message, setMessage] = useState('');
   const [receivedMessage, setReceivedMessage] = useState('');
+  const [mqttConnected, setMqttConnected] = useState(false); // Track MQTT connection status
   const [starterData, setStarterData] = useState({
     starter1: null,
     starter2: null,
@@ -67,59 +68,91 @@ const MqttScreen = ({ userID }) => {
   const [selectedValue, setSelectedValue] = useState('');
   const [topic,setTopic]=useState('')
 
+  const connectToMqtt = () => {
+    if (starterData.starter1) {
+      MQTTClient.create(userID, 
+        [`${starterData.starter1}/data`, `${starterData.starter1}/command`], 
+        {}, 
+        onMessageArrived
+      );
+      setMqttConnected(true); // Update connection status
+      console.log('MQTT Client connected');
+    } else {
+      console.error('Starter data not available. Cannot connect to MQTT.');
+    }
+  };
 
-
-  useEffect(() => {
-    const connectToMqtt = async () => {
-      // Read starter data before connecting
-      await readStarterData();
-  
-      // Connect to MQTT only if starter1 is valid
-      if (starterData.starter1) {
-        console.log('Connecting to MQTT broker...');
-        const onMessageArrived = (msg) => {
-          if (msg && msg.data) {
-            try {
-              const parsedData = JSON.parse(msg.data);
-              console.log('Parsed Data:', parsedData); // Logging the parsed data for debugging
-              
-              // Handle incoming data
-              if (parsedData && Object.keys(parsedData).length > 0) {
-                setUserData(parsedData);
-                data_req(parsedData); // Pass the valid parsed data
-                
-                // Update mm from incoming data
-                if (parsedData.mm) {
-                  setMm(parsedData.mm); // Update mm from incoming data
-                }
-              } else {
-                console.log('Parsed data is null or empty');
-              }
-            } catch (error) {
-              console.error('Failed to parse message data:', error);
-            }
+    // Reconnect function
+    const reconnectToMqtt = () => {
+      console.log('Attempting to reconnect to MQTT...');
+      setMqttConnected(false); // Set connection status to false and retry connecting
+      connectToMqtt();
+    };
+  // Handle incoming MQTT messages
+  const onMessageArrived = (msg) => {
+    if (msg && msg.data) {
+      try {
+        const parsedData = JSON.parse(msg.data);
+        console.log('Parsed Data:', parsedData); // Logging the parsed data for debugging
+        
+        // Handle incoming data
+        if (parsedData && Object.keys(parsedData).length > 0) {
+          setUserData(parsedData);
+          data_req(parsedData); // Pass the valid parsed data
+          
+          // Update mm from incoming data
+          if (parsedData.mm) {
+            setMm(parsedData.mm); // Update mm from incoming data
           }
-        };
-  
-        MQTTClient.create(userID, 
-          [`${starterData.starter1}/data`, `${starterData.starter1}/command`], 
-          {}, 
-          onMessageArrived
-        );
-  
-        console.log("MQTT Client connected to topics:", `${starterData.starter1}/data`, `${starterData.starter1}/command`);
-      } else {
-        console.error('starter1 is not set. Cannot connect to MQTT.');
+        } else {
+          console.log('Parsed data is null or empty');
+        }
+      } catch (error) {
+        console.error('Failed to parse message data:', error);
       }
     }
+
+  };
+
+    // Effect for setting up MQTT connection
+    useEffect(() => {
+      readStarterData();
+      connectToMqtt(); // Connect when the component mounts
   
-    connectToMqtt();
+      return () => {
+        MQTTClient.disconnect(); // Clean up MQTT connection on unmount
+        setMqttConnected(false);
+      };
+    }, [userID]); // Trigger reconnect if userID changes
   
-    return () => {
-      // This should trigger the disconnect method
-      MQTTClient.disconnect();
+    // Effect to handle reconnection logic (optional)
+    useEffect(() => {
+      if (!mqttConnected) {
+        // Using a timeout to attempt reconnection every 5 seconds
+        const intervalId = setInterval(() => {
+          reconnectToMqtt();
+        }, 500);
+        
+        // Cleanup function to clear the interval
+        return () => clearInterval(intervalId);
+      }
+    }, [mqttConnected]);
+  
+    // Function to handle motor button press
+    const handleMotorPress = async () => {
+      if (starterData.starter1) {
+        const command = '{"action": "toggle"}';
+        await MQTTClient.publishMessage(`${starterData.starter1}/command`, command);
+        console.log('Motor command sent:', command);
+      } else {
+        console.error('Starter data is not available. Cannot send command.');
+      }
     };
-  }, [userID]);
+  
+
+
+  
+
 
   
 
@@ -237,6 +270,7 @@ const MqttScreen = ({ userID }) => {
         setSelectedValue(''); // or some default value if mm is not set
     }
   }, [mm]);
+
 
 
   return (
