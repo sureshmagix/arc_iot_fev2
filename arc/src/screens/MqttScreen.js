@@ -68,27 +68,57 @@ const MqttScreen = ({ userID }) => {
   const [selectedValue, setSelectedValue] = useState('');
   const [topic,setTopic]=useState('')
 
-  const connectToMqtt = () => {
-    if (starterData.starter1) {
-      MQTTClient.create(userID, 
-        [`${starterData.starter1}/data`, `${starterData.starter1}/command`], 
-        {}, 
-        onMessageArrived
-      );
-      setMqttConnected(true); // Update connection status
-      console.log('MQTT Client connected');
-    } else {
-      console.error('Starter data not available. Cannot connect to MQTT.');
+
+
+  const readStarterData = async () => {
+    try {
+      const jsonValue = await AsyncStorage.getItem('starterData');
+      if (jsonValue) {
+        const parsedData = JSON.parse(jsonValue);
+        setStarterData(parsedData);
+        setStarter1(parsedData.starter1);
+        console.log('Starter data retrieved:', parsedData);
+      } else {
+        console.log('No starter data found in AsyncStorage.');
+      }
+    } catch (error) {
+      console.error('Error reading starter data:', error);
+      Alert.alert('Error', 'Failed to read starter data');
     }
   };
 
-    // Reconnect function
-    const reconnectToMqtt = () => {
-      console.log('Attempting to reconnect to MQTT...');
-      setMqttConnected(false); // Set connection status to false and retry connecting
+  useEffect(() => {
+    readStarterData();
+  }, []);
+
+  useEffect(() => {
+    if (starter1) {
       connectToMqtt();
-    };
-  // Handle incoming MQTT messages
+    }
+  }, [starter1]);
+
+  const connectToMqtt = () => {
+    if (starter1) {
+      MQTTClient.create(userID, [`${starter1}/data`, `${starter1}/command`], {}, onMessageArrived);
+      setMqttConnected(true);
+      console.log("Connected to MQTT. Topic:", `${starter1}/command`);
+    } else {
+      console.error('Starter1 is not set. Cannot connect to MQTT.');
+    }
+  };
+
+  // Reconnect if connection drops
+  useEffect(() => {
+    if (!mqttConnected && starter1) {
+      const intervalId = setInterval(() => {
+        console.log('Attempting to reconnect to MQTT...');
+        connectToMqtt();
+      }, 5000);
+
+      return () => clearInterval(intervalId);
+    }
+  }, [mqttConnected, starter1]);
+
   const onMessageArrived = (msg) => {
     if (msg && msg.data) {
       try {
@@ -114,47 +144,21 @@ const MqttScreen = ({ userID }) => {
 
   };
 
-    // Effect for setting up MQTT connection
-    useEffect(() => {
-      readStarterData();
-      connectToMqtt(); // Connect when the component mounts
-  
-      return () => {
-        MQTTClient.disconnect(); // Clean up MQTT connection on unmount
-        setMqttConnected(false);
-      };
-    }, [userID]); // Trigger reconnect if userID changes
-  
-    // Effect to handle reconnection logic (optional)
-    useEffect(() => {
-      if (!mqttConnected) {
-        // Using a timeout to attempt reconnection every 5 seconds
-        const intervalId = setInterval(() => {
-          reconnectToMqtt();
-        }, 500);
-        
-        // Cleanup function to clear the interval
-        return () => clearInterval(intervalId);
-      }
-    }, [mqttConnected]);
-  
-    // Function to handle motor button press
-    const handleMotorPress = async () => {
-      if (starterData.starter1) {
-        const command = '{"action": "toggle"}';
-        await MQTTClient.publishMessage(`${starterData.starter1}/command`, command);
-        console.log('Motor command sent:', command);
-      } else {
-        console.error('Starter data is not available. Cannot send command.');
-      }
-    };
   
 
-
+  
+  // Function to handle motor button press
+  const handleMotorPress = async () => {
+    if (starter1 && mqttConnected) {
+      const command = '{"action": "toggle"}';
+      await MQTTClient.publishMessage(`${starter1}/command`, command);
+      console.log('Motor command sent:', command);
+    } else {
+      console.error('Cannot send command. MQTT client is not connected or starter1 is not set.');
+    }
+  };
   
 
-
-  
 
 
   const getTime = () => {
@@ -186,31 +190,22 @@ const MqttScreen = ({ userID }) => {
   };
   
 
+  // Read starter data from AsyncStorage
 
-
-
-  const readStarterData = async () => {
-    try {
-      const jsonValue = await AsyncStorage.getItem('starterData');
-      if (jsonValue != null) {
-        const parsedData = JSON.parse(jsonValue);
-        setStarterData(parsedData);
-        console.log('Starter data successfully retrieved from AsyncStorage:', parsedData);
-        Alert.alert('Message', 'Data read from storage');
-      } else {
-        console.log('No starter data found in AsyncStorage.');
-      }
-    } catch (error) {
-      console.error('Error reading starter data:', error);
-      Alert.alert('Error', 'Failed to read starter data');
-    }
-  };
 
   const onRefresh = () => {
     setRefreshing(true);
     data_req();
     setRefreshing(false);
   };
+
+
+
+
+
+
+  // Use effect to read starter data on mount
+
 
   const handleReset = () => {
 
@@ -252,7 +247,6 @@ const MqttScreen = ({ userID }) => {
     MQTTClient.publishMessage(`${starterData.starter1}` + '/command', `{"phase":"${value}"}`); // Publish the selected mode
     setMessage(''); // You can reset or change messages if needed
   };
-
 
   useEffect(() => {
     // Set the selectedValue based on the mm value
@@ -301,7 +295,7 @@ const MqttScreen = ({ userID }) => {
             }}>
             <View style={styles.container3}>
               <View style={styles.leftContainer}>
-                <Motor />
+                <Motor  onPress={handleMotorPress}  />
               </View>
               <View style={styles.rightContainer}>
                 <Light />

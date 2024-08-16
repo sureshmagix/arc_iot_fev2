@@ -6,7 +6,7 @@ import Toast from 'react-native-toast-message';
 import { Alert } from 'react-native';
 import Config from 'react-native-config';
 
-const Motor = ({ onPress }) => {
+const Motor = ({onPress}) => {
 
   const [iconColor, setIconColor] = useState('blue');
   const [info, setInfo] = useState('WAITING');
