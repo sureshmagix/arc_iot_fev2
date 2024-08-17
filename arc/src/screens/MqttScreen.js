@@ -68,6 +68,8 @@ const MqttScreen = ({ userID }) => {
   const [selectedValue, setSelectedValue] = useState('');
   const [topic,setTopic]=useState('')
 
+  const [isResetting, setIsResetting] = useState(false);
+
 
 
   const readStarterData = async () => {
@@ -129,6 +131,7 @@ const MqttScreen = ({ userID }) => {
         if (parsedData && Object.keys(parsedData).length > 0) {
           setUserData(parsedData);
           data_req(parsedData); // Pass the valid parsed data
+          setReceivedMessage(parsedData);
           
           // Update mm from incoming data
           if (parsedData.mm) {
@@ -157,6 +160,17 @@ const MqttScreen = ({ userID }) => {
       console.error('Cannot send command. MQTT client is not connected or starter1 is not set.');
     }
   };
+
+  const handleLightPress = async () => {
+    if (starter1 && mqttConnected) {
+      const command = '{"trigger": "light"}';
+      await MQTTClient.publishMessage(`${starter1}/command`, command);
+      console.log('Motor command sent:', command);
+    } else {
+      console.error('Cannot send command. MQTT client is not connected or starter1 is not set.');
+    }
+  };
+  
   
 
 
@@ -207,8 +221,41 @@ const MqttScreen = ({ userID }) => {
   // Use effect to read starter data on mount
 
 
-  const handleReset = () => {
+  // const handleReset = () => {
 
+  //   // Show confirmation alert before sending the reset command
+  //   Alert.alert(
+  //     'Confirm Action',
+  //     'Are you sure you want to send the RESET command?',
+  //     [
+  //       {
+  //         text: 'CANCEL',
+  //         onPress: () => console.log('RESET command cancelled'),
+  //         style: 'cancel',
+  //       },
+  //       {
+  //         text: 'SEND COMMAND',
+  //         onPress: () => {
+  //           console.log('Reset button pressed');
+  //           readStarterData();
+  //           console.log('Starter data read:'+`${starterData.starter1}` )
+  //           setTopic(`${starterData.starter1}`+'/command')
+  //           console.log("RESET TOPIC SET AS:"+`${starterData.starter1}`+'/command');
+  //           MQTTClient.publishMessage(`${starterData.starter1}`+'/command','{\n  "trigger":"rst"\n}');
+  //           setMessage('');
+  //         },
+  //       },
+  //     ],
+  //     {cancelable: false},
+  //   );
+ 
+  // };
+
+
+  const handleReset = () => {
+    if (isResetting) return; // Prevent execution if already in progress
+    setIsResetting(true); // Set the flag
+  
     // Show confirmation alert before sending the reset command
     Alert.alert(
       'Confirm Action',
@@ -216,7 +263,10 @@ const MqttScreen = ({ userID }) => {
       [
         {
           text: 'CANCEL',
-          onPress: () => console.log('RESET command cancelled'),
+          onPress: () => {
+            console.log('RESET command cancelled');
+            setIsResetting(false); // Reset the flag
+          },
           style: 'cancel',
         },
         {
@@ -224,17 +274,17 @@ const MqttScreen = ({ userID }) => {
           onPress: () => {
             console.log('Reset button pressed');
             readStarterData();
-            console.log('Starter data read:'+`${starterData.starter1}` )
-            setTopic(`${starterData.starter1}`+'/command')
-            console.log("RESET TOPIC SET AS:"+`${starterData.starter1}`+'/command');
-            MQTTClient.publishMessage(`${starterData.starter1}`+'/command','{\n  "trigger":"rst"\n}');
+            const resetTopic = `${starterData.starter1}/command`;
+    
+            console.log("RESET TOPIC SET AS:" + resetTopic);
+            MQTTClient.publishMessage(resetTopic, '{"trigger":"rst"}');
             setMessage('');
+            setIsResetting(false); // Reset the flag after completion
           },
         },
       ],
-      {cancelable: false},
+      { cancelable: false },
     );
- 
   };
 
   const handleRadioButtonChange = (value) => {
@@ -295,10 +345,10 @@ const MqttScreen = ({ userID }) => {
             }}>
             <View style={styles.container3}>
               <View style={styles.leftContainer}>
-                <Motor  onPress={handleMotorPress}  />
+                <Motor  onPress={handleMotorPress} mqttData={receivedMessage} mReset={handleReset} />
               </View>
               <View style={styles.rightContainer}>
-                <Light />
+                <Light onPress={handleLightPress} mqttData={receivedMessage} />
               </View>
             </View>
           </Card>

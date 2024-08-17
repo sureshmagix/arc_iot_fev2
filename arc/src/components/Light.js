@@ -5,7 +5,7 @@ import Config from 'react-native-config';
 import MQTT from 'sp-react-native-mqtt';
 import Toast from 'react-native-toast-message';
 import { Alert } from 'react-native';
-const Light = () => {
+const Light = ({ onPress, mqttData}) => {
   const [mqttClient, setMqttClient] = useState(null);
   const [iconColor, setIconColor] = useState('blue');
   const [info, setInfo] = useState('WAITING');
@@ -13,10 +13,37 @@ const Light = () => {
   const [isTouchable, setIsTouchable] = useState(true);
   const [ls, setLs] = useState('');
 
+  useEffect(() => {
+
+    setInfo('WAITING');
+    if (mqttData) {
+      console.log('LIGHT:'+ mqttData);
+      // Assuming mqttData contains the information you need to update the Motor component
+      // For example, let's say mqttData contains an 'info' field
+      //setInfo(mqttData.ms || 'WAITING');
+      // Update the icon color or any other state based on mqttData
+      if (mqttData.ls === 'on') {
+        setIconColor('yellow');
+        setInfo('LIGHT ON');
+      } else if (mqttData.ls === 'off') {
+        setIconColor('black');
+        setInfo('LIGHT OFF');
+      } else if (mqttData.ls === 'eboff') {
+        setIconColor('grey');
+        setInfo('POWER FAIL');
+       }
+        else  {
+        setIconColor('blue');
+        setInfo('WAITING');
+      }
+      setIsTouchable(true);
+    }
+  }, [mqttData]);
+
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity disabled={!isTouchable}>
+      <TouchableOpacity onPress ={onPress} disabled={!isTouchable}>
       <Svg width="90" height="90" viewBox="0 0 128 128">
         <Ellipse cx="64" cy="116.87" rx="12.09" ry="7.13" fill="#424242" />
         <Path 

@@ -6,73 +6,17 @@ import Toast from 'react-native-toast-message';
 import { Alert } from 'react-native';
 import Config from 'react-native-config';
 
-const Motor = ({ onPress, mqttData ,mReset }) => {
+const Motor = ({onPress}) => {
 
   const [iconColor, setIconColor] = useState('blue');
   const [info, setInfo] = useState('WAITING');
   const [isTouchable, setIsTouchable] = useState(true);
 
-   // Update the motor info based on incoming MQTT data
-   useEffect(() => {
-
-    setInfo('WAITING');
-    if (mqttData) {
-      console.log('MOTORRRRRR:'+ mqttData);
-      // Assuming mqttData contains the information you need to update the Motor component
-      // For example, let's say mqttData contains an 'info' field
-      //setInfo(mqttData.ms || 'WAITING');
-      // Update the icon color or any other state based on mqttData
-      if (mqttData.ms === 'on') {
-        setIconColor('green');
-        setInfo('MOTOR ON');
-      } else if (mqttData.ms === 'off') {
-        setIconColor('red');
-        setInfo('MOTOR OFF');
-      } else if (mqttData.ms === 'eboff') {
-        setIconColor('grey');
-        setInfo('POWER FAIL');
-      } else if (mqttData.ms === 'auto') {
-        setIconColor('darkgoldenrod');
-        setInfo('AUTO');
-      } else if (mqttData.ms === 'manual') {
-        setIconColor('mediumorchid');
-        setInfo('MANUAL');
-      } else if (mqttData.ms === 'break') {
-        setIconColor('#456740');
-        handleBreak();
-        setInfo(mqttData.bkm);
-      } else  {
-        setIconColor('blue');
-        setInfo('WAITING');
-      }
-      setIsTouchable(true);
-    }
-  }, [mqttData]);
-
-  const handleBreak=() =>{
-    Alert.alert(
-      'Confirmation',
-      'BREAK DOWN !!! Please RESET motor !!!',
-      [
-        {
-          text: 'Cancel',
-          onPress: () => console.log('Cancel Pressed'),
-          style: 'cancel',
-        },
-        {
-          text: 'OK',
-          onPress:()=>  mReset() 
-        }
-        
-        ],
-        {cancelable: false}
-      );
-
-  }
+  
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={onPress} disabled={!isTouchable}>
+      <TouchableOpacity  onPress={onPress} disabled={!isTouchable}>
         <Svg width="100" height="100" viewBox="0 0 100 100">
           <Path
             d="M46 69V27c-2.2 0-4 1.8-4 4v34c0 2.2 1.8 4 4 4zM31 45h3v6h-3zM40 63V33c-2.2 0-4 1.8-4 4v22c0 2.2 1.8 4 4 4zM57 69h18v4H57zM76 67h8V29H48v38h28zM55 33h22c1.7 0 3 1.3 3 3s-1.3 3-3 3H55c-1.7 0-3-1.3-3-3s1.3-3 3-3zm0 12h22c1.7 0 3 1.3 3 3s-1.3 3-3 3H55c-1.7 0-3-1.3-3-3s1.3-3 3-3zm-3 15c0-1.7 1.3-3 3-3h22c1.7 0 3 1.3 3 3s-1.3 3-3 3H55c-1.7 0-3-1.3-3-3zm-23 1V35H15.4L13 37.4v21.2l2.4 2.4H29zm-8.7-20.7c.4-.4 1-.4 1.4 0 .2.2 5.3 5.3 5.3 9.7 0 3.3-2.7 6-6 6s-6-2.7-6-6c0-4.4 5.1-9.5 5.3-9.7zM90 27h-4v42h4c2.2 0 4-1.8 4-4V31c0-2.2-1.8-4-4-4zM18 25h9.6l1.4-1.4V19H15v4.6l1.4 1.4zM19 27h6v6h-6zM6 45h5v6H6zM76 75H16.7l-2.3 6h71.2l-2.3-6z"
@@ -81,9 +25,11 @@ const Motor = ({ onPress, mqttData ,mReset }) => {
         </Svg>
       </TouchableOpacity>
       <View style={styles.infoContainer}>
-        <Text style={styles.infoText}>{info}</Text>
+      <Text style={styles.infoText}>{info}</Text>
       </View>
     </View>
+
+    
   );
 };
 
