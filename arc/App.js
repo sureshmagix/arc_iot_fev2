@@ -107,6 +107,7 @@ const StackNav = () => {
                 />
               );
             },
+            headerShown: false,
           }
         }
       />

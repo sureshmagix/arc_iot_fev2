@@ -22,26 +22,43 @@ const Motor = ({ onPress, mqttData ,mReset }) => {
       // For example, let's say mqttData contains an 'info' field
       //setInfo(mqttData.ms || 'WAITING');
       // Update the icon color or any other state based on mqttData
-      if (mqttData.ms === 'on') {
-        setIconColor('green');
-        setInfo('MOTOR ON');
-      } else if (mqttData.ms === 'off') {
+      if (mqttData.ms === 'ron') {
+        setIconColor('#7fff00');
+        setInfo('REMOTE ON');
+      } else if (mqttData.ms === 'rof') {
         setIconColor('red');
-        setInfo('MOTOR OFF');
+        setInfo('REMOTE OFF');
+      }else if (mqttData.ms === 'son') {
+        setIconColor('#7fff00');
+        setInfo('SMS ON');
+      } else if (mqttData.ms === 'sof') {
+        setIconColor('red');
+        setInfo('SMS OFF');
+      } else if (mqttData.ms === 'aon') {
+        setIconColor('darkgoldenrod');
+        setInfo('AUTO ON');
+      } else if (mqttData.ms === 'mon') {
+        setIconColor('mediumorchid');
+        setInfo('MANUAL ON');
+      } else if (mqttData.ms === 'mof') {
+        setIconColor('red');
+        setInfo('MANUAL OFF');
+      }else if (mqttData.ms === 'con') {
+        setIconColor('mediumorchid');
+        setInfo('CALL ON');
+        
+      }else if (mqttData.ms === 'cof') {
+        setIconColor('red');
+        setInfo('CALL OFF');
       } else if (mqttData.ms === 'eboff') {
         setIconColor('grey');
         setInfo('POWER FAIL');
-      } else if (mqttData.ms === 'auto') {
-        setIconColor('darkgoldenrod');
-        setInfo('AUTO');
-      } else if (mqttData.ms === 'manual') {
-        setIconColor('mediumorchid');
-        setInfo('MANUAL');
-      } else if (mqttData.ms === 'break') {
+      } else if (mqttData.ms === 'trip') {
         setIconColor('#456740');
         handleBreak();
         setInfo(mqttData.bkm);
-      } else  {
+      }
+      else  {
         setIconColor('blue');
         setInfo('WAITING');
       }

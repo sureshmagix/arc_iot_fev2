@@ -2,7 +2,7 @@ import MQTT from 'sp-react-native-mqtt';
 import _ from 'underscore';
 
 const MQTTClient = {
-  QOS: 1,
+  QOS: 0,
 
   create(userID, topics, connectionProps = {}, onMessageArrivedCallback) {
     const deviceId = `realtime.${userID}.${this.randIdCreator()}`;

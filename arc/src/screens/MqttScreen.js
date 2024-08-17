@@ -290,7 +290,7 @@ const MqttScreen = ({ userID }) => {
   const handleRadioButtonChange = (value) => {
     console.log(`${value} mode`);
     setSelectedValue(value);  // Update the selected radio button
-    readStarterData();  // Fetch or read required data
+    //readStarterData();  // Fetch or read required data
     console.log('Starter data read: ' + `${starterData.starter1}`);
     setTopic(`${starterData.starter1}` + '/command');
     console.log("RESET TOPIC SET AS: " + `${starterData.starter1}` + '/command');
@@ -301,13 +301,13 @@ const MqttScreen = ({ userID }) => {
   useEffect(() => {
     // Set the selectedValue based on the mm value
     switch (mm) {
-      case '2Phase':
+      case '2P':
         setSelectedValue('2Phase');
         break;
-      case '3Phase':
+      case '3P':
         setSelectedValue('3Phase');
         break;
-      case 'Both':
+      case '23P':
         setSelectedValue('Both');
         break;
       default:
@@ -494,7 +494,7 @@ const MqttScreen = ({ userID }) => {
                 <RadioButton
                   value="2Phase"
                   status={selectedValue === '2Phase' ? 'checked' : 'unchecked'}
-                  onPress={() => handleRadioButtonChange('2Phase')}
+                  onPress={() => handleRadioButtonChange('2P')}
                 />
                 <Text style={styles.radioLabel}>2 Phase</Text>
               </View>
@@ -502,7 +502,7 @@ const MqttScreen = ({ userID }) => {
                 <RadioButton
                   value="3Phase"
                   status={selectedValue === '3Phase' ? 'checked' : 'unchecked'}
-                  onPress={() => handleRadioButtonChange('3Phase')}
+                  onPress={() => handleRadioButtonChange('3P')}
                 />
                 <Text style={styles.radioLabel}>3 Phase</Text>
               </View>
@@ -510,7 +510,7 @@ const MqttScreen = ({ userID }) => {
                 <RadioButton
                   value="Both"
                   status={selectedValue === 'Both' ? 'checked' : 'unchecked'}
-                  onPress={() => handleRadioButtonChange('Both')}
+                  onPress={() => handleRadioButtonChange('23P')}
                 />
                 <Text style={styles.radioLabel}>Both</Text>
               </View>
