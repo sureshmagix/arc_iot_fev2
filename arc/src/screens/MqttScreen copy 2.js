@@ -39,6 +39,7 @@ const screenWidth = Dimensions.get('window').width;
 const MqttScreen = ({ userID }) => {
   const [message, setMessage] = useState('');
   const [receivedMessage, setReceivedMessage] = useState('');
+  const [mqttConnected, setMqttConnected] = useState(false); // Track MQTT connection status
   const [starterData, setStarterData] = useState({
     starter1: null,
     starter2: null,
@@ -67,49 +68,111 @@ const MqttScreen = ({ userID }) => {
   const [selectedValue, setSelectedValue] = useState('');
   const [topic,setTopic]=useState('')
 
+  const [isResetting, setIsResetting] = useState(false);
 
+
+
+  const readStarterData = async () => {
+    try {
+      const jsonValue = await AsyncStorage.getItem('starterData');
+      if (jsonValue) {
+        const parsedData = JSON.parse(jsonValue);
+        setStarterData(parsedData);
+        setStarter1(parsedData.starter1);
+        console.log('Starter data retrieved:', parsedData);
+      } else {
+        console.log('No starter data found in AsyncStorage.');
+      }
+    } catch (error) {
+      console.error('Error reading starter data:', error);
+      Alert.alert('Error', 'Failed to read starter data');
+    }
+  };
 
   useEffect(() => {
     readStarterData();
-    
-    console.log('starter1 is set as :'+starter1)
-    const onMessageArrived = (msg) => {
-      if (msg && msg.data) {
-        try {
-          const parsedData = JSON.parse(msg.data);
-          console.log('Parsed Data:', parsedData);  // Logging the parsed data for debugging
-    
-          // Check if parsedData is valid before calling data_req
-          if (parsedData && Object.keys(parsedData).length > 0) {
-            setUserData(parsedData);
-            data_req(parsedData);  // Pass the valid parsed data
+  }, []);
 
-                      // Assuming mm is part of parsedData
+  useEffect(() => {
+    if (starter1) {
+      connectToMqtt();
+    }
+  }, [starter1]);
+
+  const connectToMqtt = () => {
+    if (starter1) {
+      MQTTClient.create(userID, [`${starter1}/data`, `${starter1}/command`], {}, onMessageArrived);
+      setMqttConnected(true);
+      console.log("Connected to MQTT. Topic:", `${starter1}/command`);
+    } else {
+      console.error('Starter1 is not set. Cannot connect to MQTT.');
+    }
+  };
+
+  // Reconnect if connection drops
+  useEffect(() => {
+    if (!mqttConnected && starter1) {
+      const intervalId = setInterval(() => {
+        console.log('Attempting to reconnect to MQTT...');
+        connectToMqtt();
+      }, 5000);
+
+      return () => clearInterval(intervalId);
+    }
+  }, [mqttConnected, starter1]);
+
+  const onMessageArrived = (msg) => {
+    if (msg && msg.data) {
+      try {
+        const parsedData = JSON.parse(msg.data);
+        console.log('Parsed Data:', parsedData); // Logging the parsed data for debugging
+        
+        // Handle incoming data
+        if (parsedData && Object.keys(parsedData).length > 0) {
+          setUserData(parsedData);
+          data_req(parsedData); // Pass the valid parsed data
+          setReceivedMessage(parsedData);
+          
+          // Update mm from incoming data
           if (parsedData.mm) {
             setMm(parsedData.mm); // Update mm from incoming data
           }
-          } else {
-            console.log('Parsed data is null or empty');
-          }
-        } catch (error) {
-          console.error('Failed to parse message data:', error);
+        } else {
+          console.log('Parsed data is null or empty');
         }
+      } catch (error) {
+        console.error('Failed to parse message data:', error);
       }
-    };
+    }
 
-
-    MQTTClient.create(userID,[`${starterData.starter1}`+'/data',`${starterData.starter1}`+'/command'] ,{}, onMessageArrived);
-
-   // MQTTClient.create(userID, `${starterData.starter1}`+'/command',{}, onMessageArrived);
-   // MQTTClient.create(userID, 'bob',{}, onMessageArrived);
-    return () => {
-      MQTTClient.disconnect();  // This should trigger the disconnect method
-    };
-
-   
-  }, [userID]);
+  };
 
   
+
+  
+  // Function to handle motor button press
+  const handleMotorPress = async () => {
+    if (starter1 && mqttConnected) {
+      const command = '{"action": "toggle"}';
+      await MQTTClient.publishMessage(`${starter1}/commnad`, command);
+      console.log('Motor command sent:', command);
+    } else {
+      console.error('Cannot send command. MQTT client is not connected or starter1 is not set.');
+    }
+  };
+
+  const handleLightPress = async () => {
+    if (starter1 && mqttConnected) {
+      const command = '{"trigger": "light"}';
+      await MQTTClient.publishMessage(`${starter1}/command`, command);
+      console.log('Motor command sent:', command);
+    } else {
+      console.error('Cannot send command. MQTT client is not connected or starter1 is not set.');
+    }
+  };
+  
+  
+
 
 
   const getTime = () => {
@@ -141,25 +204,8 @@ const MqttScreen = ({ userID }) => {
   };
   
 
+  // Read starter data from AsyncStorage
 
-
-
-  const readStarterData = async () => {
-    try {
-      const jsonValue = await AsyncStorage.getItem('starterData');
-      if (jsonValue != null) {
-        const parsedData = JSON.parse(jsonValue);
-        setStarterData(parsedData);
-        console.log('Starter data successfully retrieved from AsyncStorage:', parsedData);
-        Alert.alert('Message', 'Data read from storage');
-      } else {
-        console.log('No starter data found in AsyncStorage.');
-      }
-    } catch (error) {
-      console.error('Error reading starter data:', error);
-      Alert.alert('Error', 'Failed to read starter data');
-    }
-  };
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -167,8 +213,49 @@ const MqttScreen = ({ userID }) => {
     setRefreshing(false);
   };
 
-  const handleReset = () => {
 
+
+
+
+
+  // Use effect to read starter data on mount
+
+
+  // const handleReset = () => {
+
+  //   // Show confirmation alert before sending the reset command
+  //   Alert.alert(
+  //     'Confirm Action',
+  //     'Are you sure you want to send the RESET command?',
+  //     [
+  //       {
+  //         text: 'CANCEL',
+  //         onPress: () => console.log('RESET command cancelled'),
+  //         style: 'cancel',
+  //       },
+  //       {
+  //         text: 'SEND COMMAND',
+  //         onPress: () => {
+  //           console.log('Reset button pressed');
+  //           readStarterData();
+  //           console.log('Starter data read:'+`${starterData.starter1}` )
+  //           setTopic(`${starterData.starter1}`+'/command')
+  //           console.log("RESET TOPIC SET AS:"+`${starterData.starter1}`+'/command');
+  //           MQTTClient.publishMessage(`${starterData.starter1}`+'/command','{\n  "trigger":"rst"\n}');
+  //           setMessage('');
+  //         },
+  //       },
+  //     ],
+  //     {cancelable: false},
+  //   );
+ 
+  // };
+
+
+  const handleReset = () => {
+    if (isResetting) return; // Prevent execution if already in progress
+    setIsResetting(true); // Set the flag
+  
     // Show confirmation alert before sending the reset command
     Alert.alert(
       'Confirm Action',
@@ -176,7 +263,10 @@ const MqttScreen = ({ userID }) => {
       [
         {
           text: 'CANCEL',
-          onPress: () => console.log('RESET command cancelled'),
+          onPress: () => {
+            console.log('RESET command cancelled');
+            setIsResetting(false); // Reset the flag
+          },
           style: 'cancel',
         },
         {
@@ -184,47 +274,47 @@ const MqttScreen = ({ userID }) => {
           onPress: () => {
             console.log('Reset button pressed');
             readStarterData();
-            console.log('Starter data read:'+`${starterData.starter1}` )
-            setTopic(`${starterData.starter1}`+'/command')
-            console.log("RESET TOPIC SET AS:"+`${starterData.starter1}`+'/command');
-            MQTTClient.publishMessage(`${starterData.starter1}`+'/command','{\n  "trigger":"rst"\n}');
+            const resetTopic = `${starterData.starter1}/command`;
+    
+            console.log("RESET TOPIC SET AS:" + resetTopic);
+            MQTTClient.publishMessage(resetTopic, '{"trigger":"rst"}');
             setMessage('');
+            setIsResetting(false); // Reset the flag after completion
           },
         },
       ],
-      {cancelable: false},
+      { cancelable: false },
     );
- 
   };
 
   const handleRadioButtonChange = (value) => {
     console.log(`${value} mode`);
     setSelectedValue(value);  // Update the selected radio button
-    readStarterData();  // Fetch or read required data
+    //readStarterData();  // Fetch or read required data
     console.log('Starter data read: ' + `${starterData.starter1}`);
-    setTopic(`${starterData.starter1}` + '/command');
-    console.log("RESET TOPIC SET AS: " + `${starterData.starter1}` + '/command');
-    MQTTClient.publishMessage(`${starterData.starter1}` + '/command', `{"phase":"${value}"}`); // Publish the selected mode
+    setTopic(`${starterData.starter1}/command`);
+    console.log("RESET TOPIC SET AS: " + `${starterData.starter1}/command`);
+    MQTTClient.publishMessage(`${starterData.starter1}/command`, `{"phase":"${value}"}`); // Publish the selected mode
     setMessage(''); // You can reset or change messages if needed
   };
-
 
   useEffect(() => {
     // Set the selectedValue based on the mm value
     switch (mm) {
-      case '2Phase':
+      case '2P':
         setSelectedValue('2Phase');
         break;
-      case '3Phase':
+      case '3P':
         setSelectedValue('3Phase');
         break;
-      case 'Both':
+      case '23P':
         setSelectedValue('Both');
         break;
       default:
         setSelectedValue(''); // or some default value if mm is not set
     }
   }, [mm]);
+
 
 
   return (
@@ -255,10 +345,10 @@ const MqttScreen = ({ userID }) => {
             }}>
             <View style={styles.container3}>
               <View style={styles.leftContainer}>
-                <Motor />
+                <Motor  onPress={handleMotorPress} mqttData={receivedMessage} mReset={handleReset} />
               </View>
               <View style={styles.rightContainer}>
-                <Light />
+                <Light onPress={handleLightPress} mqttData={receivedMessage} />
               </View>
             </View>
           </Card>
@@ -404,7 +494,7 @@ const MqttScreen = ({ userID }) => {
                 <RadioButton
                   value="2Phase"
                   status={selectedValue === '2Phase' ? 'checked' : 'unchecked'}
-                  onPress={() => handleRadioButtonChange('2Phase')}
+                  onPress={() => handleRadioButtonChange('2P')}
                 />
                 <Text style={styles.radioLabel}>2 Phase</Text>
               </View>
@@ -412,7 +502,7 @@ const MqttScreen = ({ userID }) => {
                 <RadioButton
                   value="3Phase"
                   status={selectedValue === '3Phase' ? 'checked' : 'unchecked'}
-                  onPress={() => handleRadioButtonChange('3Phase')}
+                  onPress={() => handleRadioButtonChange('3P')}
                 />
                 <Text style={styles.radioLabel}>3 Phase</Text>
               </View>
@@ -420,7 +510,7 @@ const MqttScreen = ({ userID }) => {
                 <RadioButton
                   value="Both"
                   status={selectedValue === 'Both' ? 'checked' : 'unchecked'}
-                  onPress={() => handleRadioButtonChange('Both')}
+                  onPress={() => handleRadioButtonChange('23P')}
                 />
                 <Text style={styles.radioLabel}>Both</Text>
               </View>

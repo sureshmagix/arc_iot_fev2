@@ -14,6 +14,7 @@ const DrawerList = [
   {icon: 'home-outline', label: 'Home', navigateTo: 'App Home'},
   {icon: 'account-multiple', label: 'Profile', navigateTo: 'Profile'},
   {icon: 'account-group', label: 'User', navigateTo: 'User'},
+  {icon: 'update', label: 'Device Status', navigateTo: 'DeviceStatusScreen'},
   {icon: 'engine', label: 'Command', navigateTo: 'MqttScreen'},
   {icon: 'water-pump', label: 'Your Starter', navigateTo: 'StarterScreen'},
   {icon: 'message-text', label: 'SMS', navigateTo: 'SmsScreen'},
@@ -50,26 +51,36 @@ const DrawerItems = props => {
 
 
 function DrawerContent(props) {
-  const [storedMobile, setStoredMobile] = useState('');
+  const [starterData, setStarterData] = useState({
+    starter1: null,
+    starter2: null,
+    starter3: null,
+    starter4: null,
+  });
+  const [starter1, setStarter1] = useState('');
+
   useEffect(() => {
-    // Retrieve the stored mobile number and password when the component mounts
-    const fetchStoredCredentials = async () => {
-        try {
-            const storedMobileNumber = await AsyncStorage.getItem('mobileNumber');
-            
-            if (storedMobileNumber !== null) {
-                setStoredMobile(storedMobileNumber);
-                
-            }
-  
-        } catch (e) {
-            console.error(e);
-        }
-    };
-    fetchStoredCredentials();
+    readStarterData();
   }, []);
 
+  const mobileNumber = starterData.starter1;
 
+  const readStarterData = async () => {
+    try {
+      const jsonValue = await AsyncStorage.getItem('starterData');
+      if (jsonValue) {
+        const parsedData = JSON.parse(jsonValue);
+        setStarterData(parsedData);
+        setStarter1(parsedData.starter1);
+        console.log('Starter data retrieved:', parsedData);
+      } else {
+        console.log('No starter data found in AsyncStorage.');
+      }
+    } catch (error) {
+      console.error('Error reading starter data:', error);
+      Alert.alert('Error', 'Failed to read starter data');
+    }
+  };
 
 
 
@@ -103,9 +114,9 @@ function signOut(){
                   style={{marginTop: 5}}
                 />
                 <View style={{marginLeft: 10, flexDirection: 'column'}}>
-                  <Title style={styles.title}>Registerd Mobile No </Title>
+                  <Title style={styles.title}>Registerd Starter No </Title>
                   <Text style={styles.caption} numberOfLines={1}>
-                    sureshmagix@gmail.com
+                    {mobileNumber}
                   </Text>
                 </View>
               </View>

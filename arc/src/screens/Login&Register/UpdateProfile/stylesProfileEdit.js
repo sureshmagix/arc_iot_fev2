@@ -33,7 +33,7 @@ export default StyleSheet.create({
     backgroundColor: '#0163D2',
     alignItems: 'center',
     paddingHorizontal: 15,
-    paddingVertical: 15,
+    paddingVertical: 5,
     borderRadius: 50,
   },
   header: {
@@ -90,7 +90,7 @@ export default StyleSheet.create({
     textAlign: 'center',
   },
   infoEditView: {
-    marginTop: 5,
+    marginTop: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',

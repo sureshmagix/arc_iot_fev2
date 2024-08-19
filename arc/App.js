@@ -26,6 +26,7 @@ import StarterScreen from './src/screens/StarterScreen';
 import UpdateStarter from './src/screens/UpdateStarter'
 import updateStarter from './src/screens/UpdateStarter';
 import RegisterStarter from './src/screens/RegisterStarter';
+import DeviceStatusScreen from './src/screens/DeviceStatusScreen';
 
 const toastConfig = {
   success: props => (
@@ -123,6 +124,10 @@ const StackNav = () => {
       />
 
 <Stack.Screen name="StarterScreen" component={StarterScreen} options={{
+          headerShown: false,
+        }} />
+
+<Stack.Screen name="DeviceStatusScreen" component={DeviceStatusScreen} options={{
           headerShown: false,
         }} />
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState,useRef } from 'react';
+import React, { useEffect, useState,useRef,useCallback} from 'react';
 import {
   View,
   ScrollView,
@@ -96,6 +96,7 @@ const MqttScreen = ({ userID }) => {
   useEffect(() => {
     if (starter1) {
       connectToMqtt();
+      MQTTClient.publishMessage(`${starterData.starter1}/command`, `{"action":"start"}`);
     }
   }, [starter1]);
 
@@ -153,7 +154,7 @@ const MqttScreen = ({ userID }) => {
   // Function to handle motor button press
   const handleMotorPress = async () => {
     if (starter1 && mqttConnected) {
-      const command = '{"action": "toggle"}';
+      const command = '{"action": "motor"}';
       await MQTTClient.publishMessage(`${starter1}/command`, command);
       console.log('Motor command sent:', command);
     } else {
@@ -163,7 +164,7 @@ const MqttScreen = ({ userID }) => {
 
   const handleLightPress = async () => {
     if (starter1 && mqttConnected) {
-      const command = '{"trigger": "light"}';
+      const command = '{"action": "light"}';
       await MQTTClient.publishMessage(`${starter1}/command`, command);
       console.log('Motor command sent:', command);
     } else {
@@ -277,7 +278,7 @@ const MqttScreen = ({ userID }) => {
             const resetTopic = `${starterData.starter1}/command`;
     
             console.log("RESET TOPIC SET AS:" + resetTopic);
-            MQTTClient.publishMessage(resetTopic, '{"trigger":"rst"}');
+            MQTTClient.publishMessage(resetTopic, '{"action":"rst"}');
             setMessage('');
             setIsResetting(false); // Reset the flag after completion
           },
@@ -292,9 +293,9 @@ const MqttScreen = ({ userID }) => {
     setSelectedValue(value);  // Update the selected radio button
     //readStarterData();  // Fetch or read required data
     console.log('Starter data read: ' + `${starterData.starter1}`);
-    setTopic(`${starterData.starter1}` + '/command');
-    console.log("RESET TOPIC SET AS: " + `${starterData.starter1}` + '/command');
-    MQTTClient.publishMessage(`${starterData.starter1}` + '/command', `{"phase":"${value}"}`); // Publish the selected mode
+    setTopic(`${starterData.starter1}/command`);
+    console.log("RESET TOPIC SET AS: " + `${starterData.starter1}/command`);
+    MQTTClient.publishMessage(`${starterData.starter1}/command`, `{"action":"${value}"}`); // Publish the selected mode
     setMessage(''); // You can reset or change messages if needed
   };
 
@@ -314,6 +315,32 @@ const MqttScreen = ({ userID }) => {
         setSelectedValue(''); // or some default value if mm is not set
     }
   }, [mm]);
+
+  const publishStopMessage = useCallback(() => {
+    if (starter1) {
+      MQTTClient.publishMessage(`${starterData.starter1}/command`, `{"action":"stop"}`);
+      console.log('Stop command sent.');
+    } else {
+      console.log('Starter1 is not set. Cannot send stop command.');
+    }
+  }, [starter1]);
+
+
+  const publishStartMessage = useCallback(() => {
+    if (starter1) {
+      MQTTClient.publishMessage(`${starterData.starter1}/command`, `{"action":"start"}`);
+      console.log('Published start trigger');
+    }
+  }, [starter1]);
+  useFocusEffect(
+    useCallback(() => {
+      publishStartMessage(); // Publish start trigger on entering the screen
+
+      return () => {
+        publishStopMessage(); // Publish stop trigger on leaving the screen
+      };
+    }, [publishStartMessage, publishStopMessage])
+  );
 
 
 
@@ -529,9 +556,9 @@ const MqttScreen = ({ userID }) => {
             }}>
             <Card.Title style={styles.cardTitle}>
               {' '}
-              Last Updated on <ICSTryagain />
+               <ICSTryagain />
             </Card.Title>
-            <Text style={styles.textMobile}>{currentDate} </Text>
+            <Text style={styles.textMobile}>Last Updated : {currentDate} </Text>
           </Card>
         </View>
       </ScrollView>

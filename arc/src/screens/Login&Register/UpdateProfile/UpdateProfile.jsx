@@ -94,7 +94,7 @@ function UpdateProfile() {
       <View>
         <View style={styles.header}>
           <View style={{flex: 1}}>
-            <Back name="arrow-back" size={30} style={styles.backIcon} />
+            {/* <Back name="arrow-back" size={30} style={styles.backIcon}  /> */}
           </View>
           <View style={{flex: 3}}>
             <Text style={styles.nameText}>Edit Profile</Text>

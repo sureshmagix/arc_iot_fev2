@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import Config from 'react-native-config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   SafeAreaView,
   StyleSheet,
@@ -12,12 +14,24 @@ import {
   Alert,
   NativeModules,
 } from 'react-native';
-
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 var DirectSms = NativeModules.DirectSms;
 
 export default function Home_sms({ navigation }) {
-  const mobileNumber = '9962577674';
+  const [starterData, setStarterData] = useState({
+    starter1: null,
+    starter2: null,
+    starter3: null,
+    starter4: null,
+  });
+  const [starter1, setStarter1] = useState('');
+
+  useEffect(() => {
+    readStarterData();
+  }, []);
+
+  const mobileNumber = starterData.starter1;
 
   const sendDirectSms = async (number, message) => {
     if (number) {
@@ -49,102 +63,112 @@ export default function Home_sms({ navigation }) {
   };
 
   const handleCommand = (message) => {
-    if (mobileNumber === '') {
+    if (!mobileNumber) {
       Alert.alert('Please enter motor mobile number');
       return;
     }
     sendDirectSms(mobileNumber, message);
   };
 
+  const readStarterData = async () => {
+    try {
+      const jsonValue = await AsyncStorage.getItem('starterData');
+      if (jsonValue) {
+        const parsedData = JSON.parse(jsonValue);
+        setStarterData(parsedData);
+        setStarter1(parsedData.starter1);
+        console.log('Starter data retrieved:', parsedData);
+      } else {
+        console.log('No starter data found in AsyncStorage.');
+      }
+    } catch (error) {
+      console.error('Error reading starter data:', error);
+      Alert.alert('Error', 'Failed to read starter data');
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView>
-        <View style={styles.container}>
-          <ImageBackground
-            source={require('../assets/bg.jpeg')}
-            resizeMode="cover"
-            style={styles.image}
-          >
-            <Image
-              source={require('../assets/logo.png')}
-              style={{
-                resizeMode: 'contain',
-                alignItems: 'center',
-                tintColor: 'red',
-                justifyContent: 'center',
-                height: 100,
-                width: 200,
-                marginLeft: 'auto',
-                marginRight: 'auto',
-                marginVertical: 1,
-              }}
-            />
+      <ScrollView contentContainerStyle={styles.scrollView}>
+        <ImageBackground
+          source={require('../assets/modern_bg.jpg')}
+          resizeMode="cover"
+          style={styles.imageBackground}
+        >
+          <View style={styles.contentContainer}>
+          <View style={styles.headerContainer}>
+                <Image
+                  source={require('../assets/logo.png')}
+                  style={styles.logo}
+                />
+                <View style={styles.textContainer}>
+                  <Text style={styles.titleText}>SMS YOUR STARTER</Text>
+                  <Text style={styles.textLabel}>Your Starter ID:</Text>
+                  <Text style={styles.textValue}>{mobileNumber}</Text>
+                </View>
+              </View>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={styles.buttonStyle}
+                onPress={() => handleCommand('Mon')}
+              >
+                <Icon name="power" size={24} color="#fff" style={styles.icon} />
+                <Text style={styles.buttonTextStyle}>MOTOR ON / மோட்டார் ஆன்</Text>
+              </TouchableOpacity>
 
-            <Text style={styles.titleText}>Archidtech Motor Starter (SMS)</Text>
-            <Text style={styles.titleText}>அர்ச்சிட்டெக் மோட்டார் செயலி </Text>
-            <Text style={styles.textMobile}>Registered Motor Mobile No: </Text>
-            <Text style={styles.textMobile2}>{mobileNumber} </Text>
+              <TouchableOpacity
+                style={styles.buttonStyle}
+                onPress={() => handleCommand('Mof')}
+              >
+                <Icon name="power-off" size={24} color="#fff" style={styles.icon} />
+                <Text style={styles.buttonTextStyle}>MOTOR OFF / மோட்டார் ஆப்</Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={styles.buttonStyle}
-              onPress={() => handleCommand('Mon')}
-            >
-              <Text style={styles.buttonTextStyle}>MOTOR ON / மோட்டார் ஆன்</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.buttonStyle}
+                onPress={() => handleCommand('Aon')}
+              >
+                <Icon name="toggle-switch" size={24} color="#fff" style={styles.icon} />
+                <Text style={styles.buttonTextStyle}>AUTO ON - 2/3</Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={styles.buttonStyle}
-              onPress={() => handleCommand('Mof')}
-            >
-              <Text style={styles.buttonTextStyle}>MOTOR OFF / மோட்டார் ஆப்</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.buttonStyle}
+                onPress={() => handleCommand('Aof')}
+              >
+                <Icon name="toggle-switch-off" size={24} color="#fff" style={styles.icon} />
+                <Text style={styles.buttonTextStyle}>AUTO OFF - 2/3</Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={styles.buttonStyle}
-              onPress={() => handleCommand('Aon')}
-            >
-              <Text style={styles.buttonTextStyle}>AUTO ON - 2/3</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.buttonStyle}
+                onPress={() => handleCommand('3aon')}
+              >
+                <Icon name="chart-areaspline" size={24} color="#fff" style={styles.icon} />
+                <Text style={styles.buttonTextStyle}>3 PHASE - AUTO ONLY</Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={styles.buttonStyle}
-              onPress={() => handleCommand('Aof')}
-            >
-              <Text style={styles.buttonTextStyle}>AUTO OFF - 2/3</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.buttonStyle}
+                onPress={() => handleCommand('Rst')}
+              >
+                <Icon name="refresh" size={24} color="#fff" style={styles.icon} />
+                <Text style={styles.buttonTextStyle}>RESET</Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={styles.buttonStyle}
-              onPress={() => handleCommand('3aon')}
-            >
-              <Text style={styles.buttonTextStyle}>3 PHASE - AUTO ONLY</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.buttonStyle}
+                onPress={() => handleCommand('Sta')}
+              >
+                <Icon name="information-outline" size={24} color="#fff" style={styles.icon} />
+                <Text style={styles.buttonTextStyle}>STATUS</Text>
+              </TouchableOpacity>
+            </View>
 
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={styles.buttonStyle}
-              onPress={() => handleCommand('Rst')}
-            >
-              <Text style={styles.buttonTextStyle}>RESET</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={styles.buttonStyle}
-              onPress={() => handleCommand('Sta')}
-            >
-              <Text style={styles.buttonTextStyle}>STATUS</Text>
-            </TouchableOpacity>
-          </ImageBackground>
-
-          <Text style={styles.titleText}>Contact: +91 94438 17475</Text>
-          <Text style={styles.titleText}>Powered by Archidtech</Text>
-        </View>
+            <Text style={styles.footerText}>Contact: +91 94438 17475</Text>
+            <Text style={styles.footerText}>Powered by Archidtech</Text>
+          </View>
+        </ImageBackground>
       </ScrollView>
     </SafeAreaView>
   );
@@ -153,49 +177,94 @@ export default function Home_sms({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'gold',
+    backgroundColor: '#f0f0f0',
+  },
+  scrollView: {
+    flexGrow: 1,
+  },
+  imageBackground: {
+    flex: 1,
+    width: '100%',
+    justifyContent: 'center',
+  },
+  contentContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  logo: {
+    height: 100,
+    width: 100,
+    resizeMode: 'contain',
+    marginRight: 5, // Space between the logo and text
+  },
+  headerContainer: {
+    flexDirection: 'row', // Align children in a row
+    alignItems: 'center', // Vertically align items in the center
+    justifyContent: 'flex-start', // Align items to the start of the row
+    width: '100%',
     padding: 5,
-    textAlign: 'center',
+    marginBottom: 5,
   },
   titleText: {
-    fontSize: 18,
-    textAlign: 'center',
+    fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 16,
-    color: 'crimson',
+    color: '#333',
+    marginBottom: 5,
+  },
+  textContainer: {
+    flex: 1, // Take up the remaining space
+    justifyContent: 'center',
+  },
+  subtitleText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  textLabel: {
+    fontSize: 18,
+    color: '#555',
+    marginBottom: 5,
+    textAlign: 'center',
+  },
+  textValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: 'blue',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  buttonContainer: {
+    width: '100%',
   },
   buttonStyle: {
+    flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 8,
-    marginBottom: 8,
-    padding: 7,
-    backgroundColor: 'steelblue',
-    borderRadius: 15,
+    backgroundColor: '#4CAF50',
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    marginVertical: 8,
+    borderWidth: 2,
+    borderColor: '#000',
   },
   buttonTextStyle: {
-    fontSize: 18,
+    fontSize: 16,
     color: '#fff',
-    textAlign: 'center',
-    fontWeight: 'bold',
+    fontWeight: '600',
+    marginLeft: 10,
   },
-  image: {
-    flex: 0,
-    justifyContent: 'center',
+  icon: {
+    marginRight: 10,
   },
-  textMobile: {
-    fontSize: 18,
+  footerText: {
+    fontSize: 14,
+    color: '#333',
     textAlign: 'center',
-    fontWeight: 'bold',
-    fontStyle: 'italic',
-    marginBottom: 8,
-    color: 'blue',
-  },
-  textMobile2: {
-    fontSize: 30,
-    textAlign: 'center',
-    fontWeight: 'bold',
-    fontStyle: 'italic',
-    marginBottom: 8,
-    color: 'navy',
+    marginTop: 20,
   },
 });
