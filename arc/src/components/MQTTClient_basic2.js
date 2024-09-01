@@ -2,12 +2,12 @@ import MQTT from 'sp-react-native-mqtt';
 import _ from 'underscore';
 
 const MQTTClient = {
-  QOS: 1,
+  QOS: 0,
 
-  create(userID, topic, connectionProps = {}, onMessageArrivedCallback) {
+  create(userID, topics, connectionProps = {}, onMessageArrivedCallback) {
     const deviceId = `realtime.${userID}.${this.randIdCreator()}`;
 
-    this.topic = topic; // Store the topic
+    this.topics = Array.isArray(topics) ? topics : [topics]; // Store the topics as an array
     this.conProps = _.extend({
       clientId: deviceId,
       host: '13.233.116.176', // IP of your broker
@@ -33,18 +33,15 @@ const MQTTClient = {
       });
   },
 
-
   randIdCreator() {
     const S4 = () => (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
     return `random${S4()}${S4()}${S4()}${S4()}${S4()}${S4()}`;
   },
 
-
-
-  publishMessage(topic,message) {
+  publishMessage(topic, message) {
     if (this.client && this.client.isConnected()) {
       this.client.publish(topic, message, this.QOS, false);
-      console.log(`Published message: ${message} to topic: ${this.topic}`);
+      console.log(`Published message: ${message} to topic: ${topic}`);
     } else {
       console.error('Client is not connected. Cannot publish message.');
     }
@@ -54,12 +51,14 @@ const MQTTClient = {
     console.log('onConnectionOpened called');
     if (this.client) {
       try {
-        this.client.subscribe(this.topic, this.QOS, (err, granted) => {
-          if (err) {
-            console.error('Subscription error:', err);
-          } else {
-            console.log(`Successfully subscribed to ${this.topic} with QoS ${granted[0].qos}`);
-          }
+        this.topics.forEach(topic => {
+          this.client.subscribe(topic, this.QOS, (err, granted) => {
+            if (err) {
+              console.error('Subscription error:', err);
+            } else {
+              console.log(`Successfully subscribed to ${topic} with QoS ${granted[0].qos}`);
+            }
+          });
         });
       } catch (err) {
         console.error('Error during subscription:', err);
@@ -83,5 +82,3 @@ const MQTTClient = {
 };
 
 export default MQTTClient;
-
-
