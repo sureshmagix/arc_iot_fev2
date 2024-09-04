@@ -15,20 +15,53 @@ const MQTTClient = {
   async create(userID, topics, connectionProps = {}, onMessageArrivedCallback) {
     const deviceId = `realtime.${userID}.${this.randIdCreator()}`;
 
-   
+    const CERTIFICATE = `
+    -----BEGIN CERTIFICATE-----
+    MIIDfzCCAmegAwIBAgIUXGZSrcrBXy1ptnUUGk6fNZiXTuAwDQYJKoZIhvcNAQEL
+    BQAwTzELMAkGA1UEBhMCSU4xCzAJBgNVBAgMAlROMRAwDgYDVQQHDAdjaGVubmFp
+    MSEwHwYDVQQKDBhJbnRlcm5ldCBXaWRnaXRzIFB0eSBMdGQwHhcNMjQwNjAyMTc0
+    NzI2WhcNMzQwNTMxMTc0NzI2WjBPMQswCQYDVQQGEwJJTjELMAkGA1UECAwCVE4x
+    EDAOBgNVBAcMB2NoZW5uYWkxITAfBgNVBAoMGEludGVybmV0IFdpZGdpdHMgUHR5
+    IEx0ZDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAJmpf2K2c3ykCFEd
+    pEQY8+QHzT5nhxXnXoUwYH/7Y6rbppS3zYJX3cQTES1aJxefNwa6t7ynJsG/Utqx
+    vaEX7xa76ukojpjEdCEnS75hKK21ilm9WNKJRPFj3iUCBoLH41SbjAQYLHq/ZcwT
+    OpLvxuBxEm2bEt8yOJ6/lytbwdgwLARopW8CKUPFB9Hp/zDhXl1zSLYq5sPlDjb+
+    T/2RMkJNhAfuhxDA9Ua8KAVNiT86ubzbKedcqpK6CZhJP1/JgXTOkUtnxcIXEzq1
+    oWvOARSYaya9aV8AFVURn0JYYk5ohmdfqoeR41teISsUKQsntT5IiJuAC8RswJcv
+    LBKYfy0CAwEAAaNTMFEwHQYDVR0OBBYEFFPx88Se+6QaAsQzHAfhtYOsX77EMB8G
+    A1UdIwQYMBaAFFPx88Se+6QaAsQzHAfhtYOsX77EMA8GA1UdEwEB/wQFMAMBAf8w
+    DQYJKoZIhvcNAQELBQADggEBAHULIO/dZri2upHSUNzbfgc6QLCU1ehhUOPmGAWw
+    K7GdvYsUcKRpkSPIamM6otMVPwXZtyZW0r+4wtCbLiAaWAPJJj0we0xcXOuiOyzA
+    RI52SPVTULOgTd7sf9DMclrTJZ/TAtEzYZIawMEu/Ekn/wk/k4CFR7of657y5Neh
+    m6Jzcvo956w1QK8nVlo0Rlt+UXN2Akx7KNVFZrt5Yh/3BlEdRcGbpwmP3tvmeG/+
+    aYnDIRDhTyVHlcqzE+OoamYbHl8d6WVyul04vbE3jZ9Gs0zKb2sdZfFjibNx1i3n
+    5cq/KjL50Ke3VspRxnjmvkXrz3QX48Y/sZrcmE7BwAPH8QE=
+    -----END CERTIFICATE-----
+    `;
 
+        // Log the loaded certificate for debugging
+        console.log("Loaded Certificate: ", CERTIFICATE);
+
+        // Use Buffer to encode the certificate
+        const certificateBuffer = Buffer.from(CERTIFICATE.trim(), 'utf8');
+    
     
 
     // Configure the MQTT connection properties
     this.topics = Array.isArray(topics) ? topics : [topics];
     this.conProps = _.extend({
       clientId: deviceId,
-      uri: 'mqtt://13.233.116.176:1883', // IP of your broker
+      uri: 'mqtts://13.233.116.176:8883', // IP of your broker
            // Port of your broker (usually 8883 for TLS)
             // Use 'mqtts' for secure connection
       clean: true,
-      auth: false,
-
+      user: 'sureshmagix',   // Replace with your MQTT username
+      pass: 'suresh123',   // Replace with your MQTT password
+      auth: true,
+      tls: {
+        ca: [certificateBuffer],  // Base64 encode the certificate
+        rejectUnauthorized: false,  // Accept self-signed certificates
+      },
     }, connectionProps);
 
     // Create the MQTT client

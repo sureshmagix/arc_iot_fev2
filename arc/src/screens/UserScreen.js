@@ -1,64 +1,20 @@
-import React from 'react';
+import React, { useEffect, useState,useRef,useCallback} from 'react';
 import { View, Text, Button, StyleSheet, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-
+import TimerSelector from '../components/TimeSelector';
 // Sample data, replace this with real data fetching in a real application
-const sampleData = {
-  timestamp: '08/17/2024',
-  deviceID: '123456',
-  deviceState: 'Active',
-  simNumber: '9876543210',
-  signalStrength: 'Strong',
-  rssi: '-70 dBm',
-  batteryLevel: '80%',
-  networkName: 'Carrier X',
-  networkType: '4G',
-  errorCode: '0',
-  diagCode: '0',
-  location: {
-    latitude: '37.773972',
-    longitude: '-122.431297'
-  }
-};
 
-// Display Component
-const DeviceInfo = ({ data }) => {
-  return (
-    <View style={styles.deviceInfoContainer}>
-      <Text style={styles.title}>Device Information</Text>
-      <InfoRow label="Timestamp" value={data.timestamp} iconName="time-outline" />
-      <InfoRow label="Device ID" value={data.deviceID} iconName="id-card-outline" />
-      <InfoRow label="Device State" value={data.deviceState} iconName="settings-outline" />
-      <InfoRow label="SIM Number" value={data.simNumber} iconName="card-outline" />
-      <InfoRow label="Signal Strength" value={data.signalStrength} iconName="wifi-outline" />
-      <InfoRow label="RSSI" value={data.rssi} iconName="radio-outline" />
-      <InfoRow label="Battery Level" value={data.batteryLevel} iconName="battery-half-outline" />
-      <InfoRow label="Network Name" value={data.networkName} iconName="globe-outline" />
-      <InfoRow label="Network Type" value={data.networkType} iconName="cellular-outline" />
-      <InfoRow label="Error Code" value={data.errorCode} iconName="alert-circle-outline" />
-      <InfoRow label="Diag Code" value={data.diagCode} iconName="information-circle-outline" />
-      <InfoRow label="Latitude" value={data.location.latitude} iconName="earth-outline" />
-      <InfoRow label="Longitude" value={data.location.longitude} iconName="location-outline" />
-    </View>
-  );
-};
-
-// Helper row for displaying label, value, and an icon
-const InfoRow = ({ label, value, iconName }) => (
-  <View style={styles.row}>
-    <Icon name={iconName} size={24} style={styles.icon} />
-    <Text style={styles.label}>{label}: </Text>
-    <Text style={styles.value}>{value}</Text>
-  </View>
-);
 
 function UserScreen(props) {
+
+  const [isTimerSelectorVisible, setTimerSelectorVisible] = useState(false);
   return (
     <ScrollView contentContainerStyle={styles.viewStyle}>
-      <Text style={styles.headingStyle}>Coming Soon</Text>
-      <Text style={styles.textStyle}>This is User screen</Text>
-      <Button title='Home' onPress={() => props.navigation.navigate('Home')} />
-      <DeviceInfo data={sampleData} />
+      {/* <Text style={styles.headingStyle}>Coming Soon</Text>
+      <Text style={styles.textStyle}>This is User screen</Text> */}
+      <Button title='Home' onPress={() => props.navigation.navigate('App Home')} />
+      <Button title="Open Timer Selector" onPress={() => setTimerSelectorVisible(true)} />
+      <TimerSelector visible={isTimerSelectorVisible} onClose={() => setTimerSelectorVisible(false)} />
     </ScrollView>
   );
 }
