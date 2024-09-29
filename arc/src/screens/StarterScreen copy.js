@@ -69,10 +69,17 @@ function StarterScreen(props) {
       
   }
 
-
   async function storeStarterData(starterData) {
     try {
-      const jsonValue = JSON.stringify(starterData);
+      // Convert the starterData into a JSON string before storing it
+      const jsonValue = JSON.stringify({
+        starter1: starterData.starter1,
+        starter2: starterData.starter2,
+        starter3: starterData.starter3,
+        starter4: starterData.starter4,
+      });
+  
+      // Store the JSON string in AsyncStorage
       await AsyncStorage.setItem('starterData', jsonValue);
       console.log('Starter data successfully stored in AsyncStorage.');
     } catch (error) {
@@ -81,32 +88,35 @@ function StarterScreen(props) {
     }
   }
 
-
-async function getStarterData() {
-const token = await AsyncStorage.getItem('token');
-console.log(token);
-axios
-  .post('http://ec2-13-233-116-176.ap-south-1.compute.amazonaws.com:3001/starterdata', { token: token })
-  .then(res => {
-    console.log(res.data);
-    const starterData = res.data.data;
-    setStarterData(starterData);
-    storeStarterData(starterData); // Store the fetched data into AsyncStorage
-  })
-  .catch(error => {
-    console.error('Error fetching data:', error);
-    if (error.response) {
-      console.error('Response data:', error.response.data);
-      console.error('Response status:', error.response.status);
-      console.error('Response headers:', error.response.headers);
-    } else if (error.request) {
-      console.error('Request data:', error.request);
-    } else {
-      console.error('Error message:', error.message);
-    }
-    Alert.alert('Error', 'Failed to fetch user data');
-  });
-}
+  async function getStarterData() {
+    const token = await AsyncStorage.getItem('token');
+    console.log(token);
+    axios
+      .post('http://ec2-13-233-116-176.ap-south-1.compute.amazonaws.com:3001/starterdata', { token: token })
+      .then(res => {
+        console.log(res.data);
+        const starterData = res.data.data;
+  
+        // Set the starter data in your state (assuming you have a state setter function)
+        setStarterData(starterData);
+  
+        // Store the fetched data in AsyncStorage in JSON format
+        storeStarterData(starterData);
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+        if (error.response) {
+          console.error('Response data:', error.response.data);
+          console.error('Response status:', error.response.status);
+          console.error('Response headers:', error.response.headers);
+        } else if (error.request) {
+          console.error('Request data:', error.request);
+        } else {
+          console.error('Error message:', error.message);
+        }
+        Alert.alert('Error', 'Failed to fetch user data');
+      });
+  }
 
   const handleBackPress = () => {
     Alert.alert('Exit App', 'Are you sure you want to exit?', [
@@ -300,6 +310,7 @@ axios
                     : starterData.starter4}
                 </Text>
               </View>
+
             </View>
           </View>
 

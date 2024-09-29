@@ -2,24 +2,30 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Button, Image, TextInput, TouchableOpacity, ScrollView, Alert, Linking } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import styles from './style';
-import Feather from 'react-native-vector-icons/Feather';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-// import CheckBox from 'react-native-check-box';
 import CheckBox from 'react-native-check-box';
 import Entypo from 'react-native-vector-icons/Entypo';
-import ICSTryagain from '../../components/ICSTryagain';
+import NetInfo from '@react-native-community/netinfo'; // Import NetInfo
+import InternetConnectionStatusIcon from '../../components/InternetConnectionStatus_icon';
+
 function LoginScreen(props) {
     const navigation = useNavigation();
     const [mobile, setMobile] = useState('');
     const [password, setPassword] = useState('');
     const [storedMobile, setStoredMobile] = useState('');
+    const [storedPassword, setStoredPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
+    const [isConnected, setIsConnected] = useState(true);
 
-    
     useEffect(() => {
-        // Retrieve the stored mobile number and password when the component mounts
+        // Check internet connection
+        const unsubscribe = NetInfo.addEventListener(state => {
+            setIsConnected(state.isConnected);
+        });
+
+        // Retrieve stored credentials
         const fetchStoredCredentials = async () => {
             try {
                 const storedMobileNumber = await AsyncStorage.getItem('mobileNumber');
@@ -31,6 +37,7 @@ function LoginScreen(props) {
                     setMobile(storedMobileNumber);
                 }
                 if (storedPassword !== null) {
+                    setStoredPassword(storedPassword);
                     setPassword(storedPassword);
                 }
                 if (rememberMeValue !== null) {
@@ -41,6 +48,10 @@ function LoginScreen(props) {
             }
         };
         fetchStoredCredentials();
+
+        return () => {
+            unsubscribe(); // Cleanup the NetInfo listener
+        };
     }, []);
 
     const storeCredentials = async (number, pwd) => {
@@ -49,11 +60,58 @@ function LoginScreen(props) {
             await AsyncStorage.setItem('password', pwd);
             await AsyncStorage.setItem('rememberMe', JSON.stringify(rememberMe));
             setStoredMobile(number);
+            setStoredPassword(pwd);
         } catch (e) {
             console.error(e);
         }
     };
 
+    const handleSubmit = () => {
+        if (isConnected) {
+            // Online login
+            const userData = {
+                mobile: mobile,
+                password: password,
+            };
+
+            axios.post('http://ec2-13-233-116-176.ap-south-1.compute.amazonaws.com:3001/login-user', userData)
+                .then(res => {
+                    console.log(res.data);
+                    if (res.data.status === 'ok') {
+                        Alert.alert('Logged In Successfully');
+                        AsyncStorage.setItem('token', res.data.data);
+                        AsyncStorage.setItem('isLoggedIn', JSON.stringify(true));
+                        AsyncStorage.setItem('userType', res.data.userType);
+                        if (rememberMe) {
+                            storeCredentials(mobile, password);
+                        } else {
+                            AsyncStorage.removeItem('mobileNumber');
+                            AsyncStorage.removeItem('password');
+                            AsyncStorage.removeItem('rememberMe');
+                        }
+                        if (res.data.userType === "Admin") {
+                            navigation.navigate('AdminScreen');
+                        } else {
+                            navigation.navigate('Home');
+                        }
+                    } else {
+                        Alert.alert('Please Check Username or Password !!!');
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                    Alert.alert('Network Error', 'Please try again later.');
+                });
+        } else {
+            // Offline login
+            if (mobile === storedMobile && password === storedPassword) {
+                Alert.alert('Offline Login Successful');
+                navigation.navigate('Home');
+            } else {
+                Alert.alert('Offline Login Failed', 'Please check your credentials.');
+            }
+        }
+    };
 
     const emailUs = async () => {
         const email = 'sureshmagix@gmail.com';
@@ -102,57 +160,12 @@ function LoginScreen(props) {
 
 
 
-    function handleSubmit() {
-        //console.log(mobile, password);
-        const userData = {
-            mobile: mobile,
-            password: password,
-        };
-
-        axios.post('http://ec2-13-233-116-176.ap-south-1.compute.amazonaws.com:3001/login-user', userData)
-            .then(res => {
-                console.log(res.data);
-                if (res.data.status === 'ok') {
-                    Alert.alert('Logged In Successfully');
-                    AsyncStorage.setItem('token', res.data.data);
-                    AsyncStorage.setItem('isLoggedIn', JSON.stringify(true));
-                    AsyncStorage.setItem('userType', res.data.userType);
-                    if (rememberMe) {
-                        storeCredentials(mobile, password);
-                    } else {
-                        AsyncStorage.removeItem('mobileNumber');
-                        AsyncStorage.removeItem('password');
-                        AsyncStorage.removeItem('rememberMe');
-                    }
-                    if (res.data.userType === "Admin") {
-                        navigation.navigate('AdminScreen');
-                    } else {
-                        navigation.navigate('Home');
-                    }
-                } else {
-                    Alert.alert('Please Check Username or Password !!!');
-                }
-            })
-            .catch(error => {
-                if (error.response) {
-                    console.error('Data:', error.response.data);
-                    console.error('Status:', error.response.status);
-                    console.error('Headers:', error.response.headers);
-                } else if (error.request) {
-                    console.error('Request:', error.request);
-                } else {
-                    console.error('Error', error.message);
-                }
-                Alert.alert('Network Error', 'Please try again later.');
-            });
-    }
-
     return (
-        <ScrollView contentContainerStyle={{flexGrow: 1}} keyboardShouldPersistTaps={'always'}>
-            <View style={{backgroundColor: 'white'}}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps={'always'}>
+            <View style={{ backgroundColor: 'white' }}>
                 <View style={styles.logoContainer}>
                     <Image style={styles.logo} source={require('../../assets/logo.png')} />
-                    <ICSTryagain />
+                    <InternetConnectionStatusIcon />
                 </View>
                 <View style={styles.loginContainer}>
                     <Text style={styles.text_header}>Customer Login </Text>
@@ -165,14 +178,11 @@ function LoginScreen(props) {
                             maxLength={10} keyboardType='numeric'
                             onChange={e => setMobile(e.nativeEvent.text)}
                         />
-
-
-                        
                     </View>
                     <View style={styles.action}>
                         <FontAwesome name="lock" color="#b22222" style={styles.smallIcon} />
                         <TextInput
-                            placeholder="password"
+                            placeholder="Password"
                             style={styles.textInput}
                             value={password}
                             onChange={e => setPassword(e.nativeEvent.text)}
@@ -182,28 +192,19 @@ function LoginScreen(props) {
                     <View style={styles.checkboxContainer1}>
                         <CheckBox
                             isChecked={rememberMe}
-                            onClick={() => setRememberMe(!rememberMe) }
+                            onClick={() => setRememberMe(!rememberMe)}
                             style={styles.checkbox}
                             checkBoxColor="#b22222"
-                            
                         />
                         <Text style={{ color: '#b22222' }}>Remember Me</Text>
-                        
-                         
-                        
-                    </View>
-                   
-                    
-
-
-                    <View style={{ justifyContent:'flex-end', alignItems:'flex-end', marginTop:8, marginRight:10 }}>
-                        <Text style={{color: '#420475', fontWeight:'700'}}></Text>
                     </View>
                 </View>
                 <View style={styles.button}>
-                    <TouchableOpacity style={styles.inBut} onPress={() => handleSubmit()}>
+                    <TouchableOpacity style={styles.inBut} onPress={handleSubmit}>
                         <View>
-                            <Text style={styles.textSign}>Login</Text>
+                            <Text style={styles.textSign}>
+                                {isConnected ? 'Login' : 'Offline Login'}
+                            </Text>
                         </View>
                     </TouchableOpacity>
                     <View style={{padding:15}}>

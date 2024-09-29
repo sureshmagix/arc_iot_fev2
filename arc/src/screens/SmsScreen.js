@@ -18,7 +18,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 var DirectSms = NativeModules.DirectSms;
 
-export default function Home_sms({ navigation }) {
+export default function SmsScreen({navigation}) {
   const [starterData, setStarterData] = useState({
     starter1: null,
     starter2: null,
