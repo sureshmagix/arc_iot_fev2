@@ -30,24 +30,20 @@ import Config from 'react-native-config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MQTTClient from '../components/MQTTClient';
 
-
 const screenWidth = Dimensions.get('window').width;
-  
 
-
-
-const MqttScreen = ({ userID }) => {
+const MqttScreen = ({ route, userID }) => {
+  const { selectedStarter } = route.params; // Get selected starter from navigation route
   const [message, setMessage] = useState('');
   const [receivedMessage, setReceivedMessage] = useState('');
   const [mqttConnected, setMqttConnected] = useState(false); // Track MQTT connection status
+  const [starter1, setStarter1] = useState(''); // Will be updated with selected starter
   const [starterData, setStarterData] = useState({
     starter1: null,
     starter2: null,
     starter3: null,
     starter4: null,
   });
-  const [starter1,setStarter1] = useState('')
-
   const [refreshing, setRefreshing] = useState(false);
   const [mobileNumber, setMobileNumber] = useState(''); // Default value
   const [currentDate, setCurrentDate] = useState('');
@@ -71,14 +67,14 @@ const MqttScreen = ({ userID }) => {
   const [isResetting, setIsResetting] = useState(false);
 
 
-
+  // Function to read starter data from AsyncStorage
   const readStarterData = async () => {
     try {
       const jsonValue = await AsyncStorage.getItem('starterData');
       if (jsonValue) {
         const parsedData = JSON.parse(jsonValue);
         setStarterData(parsedData);
-        setStarter1(parsedData.starter1);
+        setStarter1(parsedData[selectedStarter]); // Set the selected starter from AsyncStorage
         console.log('Starter data retrieved:', parsedData);
       } else {
         console.log('No starter data found in AsyncStorage.');
@@ -90,13 +86,14 @@ const MqttScreen = ({ userID }) => {
   };
 
   useEffect(() => {
+    // Read starter data on mount
     readStarterData();
   }, []);
 
   useEffect(() => {
     if (starter1) {
       connectToMqtt();
-      MQTTClient.publishMessage(`${starterData.starter1}/command`, `{"action":"start"}`);
+      MQTTClient.publishMessage(`${starter1}/command`, `{"action":"start"}`);
     }
   }, [starter1]);
 
@@ -104,23 +101,25 @@ const MqttScreen = ({ userID }) => {
     if (starter1) {
       MQTTClient.create(userID, [`${starter1}/data`, `${starter1}/command`], {}, onMessageArrived);
       setMqttConnected(true);
-      console.log("Connected to MQTT. Topic:", `${starter1}/command`);
+      console.log('Connected to MQTT. Topic:', `${starter1}/command`);
     } else {
       console.error('Starter1 is not set. Cannot connect to MQTT.');
     }
   };
 
-  // Reconnect if connection drops
-  useEffect(() => {
-    if (!mqttConnected && starter1) {
-      const intervalId = setInterval(() => {
-        console.log('Attempting to reconnect to MQTT...');
-        connectToMqtt();
-      }, 5000);
+    // Reconnect if connection drops
+    useEffect(() => {
+      if (!mqttConnected && starter1) {
+        const intervalId = setInterval(() => {
+          console.log('Attempting to reconnect to MQTT...');
+          connectToMqtt();
+        }, 5000);
+  
+        return () => clearInterval(intervalId);
+      }
+    }, [mqttConnected, starter1]);
 
-      return () => clearInterval(intervalId);
-    }
-  }, [mqttConnected, starter1]);
+
 
   const onMessageArrived = (msg) => {
     if (msg && msg.data) {
@@ -148,9 +147,8 @@ const MqttScreen = ({ userID }) => {
 
   };
 
-  
 
-  
+    
   // Function to handle motor button press
   const handleMotorPress = async () => {
     if (starter1 && mqttConnected) {
@@ -174,6 +172,7 @@ const MqttScreen = ({ userID }) => {
   
   
 
+  
 
 
   const getTime = () => {
@@ -205,53 +204,12 @@ const MqttScreen = ({ userID }) => {
   };
   
 
-  // Read starter data from AsyncStorage
-
 
   const onRefresh = () => {
     setRefreshing(true);
-    data_req();
+    readStarterData();
     setRefreshing(false);
   };
-
-
-
-
-
-
-  // Use effect to read starter data on mount
-
-
-  // const handleReset = () => {
-
-  //   // Show confirmation alert before sending the reset command
-  //   Alert.alert(
-  //     'Confirm Action',
-  //     'Are you sure you want to send the RESET command?',
-  //     [
-  //       {
-  //         text: 'CANCEL',
-  //         onPress: () => console.log('RESET command cancelled'),
-  //         style: 'cancel',
-  //       },
-  //       {
-  //         text: 'SEND COMMAND',
-  //         onPress: () => {
-  //           console.log('Reset button pressed');
-  //           readStarterData();
-  //           console.log('Starter data read:'+`${starterData.starter1}` )
-  //           setTopic(`${starterData.starter1}`+'/command')
-  //           console.log("RESET TOPIC SET AS:"+`${starterData.starter1}`+'/command');
-  //           MQTTClient.publishMessage(`${starterData.starter1}`+'/command','{\n  "trigger":"rst"\n}');
-  //           setMessage('');
-  //         },
-  //       },
-  //     ],
-  //     {cancelable: false},
-  //   );
- 
-  // };
-
 
   const handleReset = () => {
     if (isResetting) return; // Prevent execution if already in progress
@@ -275,7 +233,7 @@ const MqttScreen = ({ userID }) => {
           onPress: () => {
             console.log('Reset button pressed');
             readStarterData();
-            const resetTopic = `${starterData.starter1}/command`;
+            const resetTopic = `${starter1}/command`;
     
             console.log("RESET TOPIC SET AS:" + resetTopic);
             MQTTClient.publishMessage(resetTopic, '{"action":"rst"}');
@@ -292,10 +250,10 @@ const MqttScreen = ({ userID }) => {
     console.log(`${value} mode`);
     setSelectedValue(value);  // Update the selected radio button
     //readStarterData();  // Fetch or read required data
-    console.log('Starter data read: ' + `${starterData.starter1}`);
+    console.log('Starter data read: ' + `${starter1}`);
     setTopic(`${starterData.starter1}/command`);
-    console.log("RESET TOPIC SET AS: " + `${starterData.starter1}/command`);
-    MQTTClient.publishMessage(`${starterData.starter1}/command`, `{"action":"${value}"}`); // Publish the selected mode
+    console.log("RESET TOPIC SET AS: " + `${starter1}/command`);
+    MQTTClient.publishMessage(`${starter1}/command`, `{"action":"${value}"}`); // Publish the selected mode
     setMessage(''); // You can reset or change messages if needed
   };
 
@@ -318,7 +276,7 @@ const MqttScreen = ({ userID }) => {
 
   const publishStopMessage = useCallback(() => {
     if (starter1) {
-      MQTTClient.publishMessage(`${starterData.starter1}/command`, `{"action":"stop"}`);
+      MQTTClient.publishMessage(`${starter1}/command`, `{"action":"stop"}`);
       console.log('Stop command sent.');
     } else {
       console.log('Starter1 is not set. Cannot send stop command.');
@@ -328,7 +286,7 @@ const MqttScreen = ({ userID }) => {
 
   const publishStartMessage = useCallback(() => {
     if (starter1) {
-      MQTTClient.publishMessage(`${starterData.starter1}/command`, `{"action":"start"}`);
+      MQTTClient.publishMessage(`${starter1}/command`, `{"action":"start"}`);
       console.log('Published start trigger');
     }
   }, [starter1]);
@@ -343,7 +301,6 @@ const MqttScreen = ({ userID }) => {
   );
 
 
-
   return (
     <SafeAreaView>
       <ScrollView
@@ -352,7 +309,7 @@ const MqttScreen = ({ userID }) => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }>
         <View style={styles.centerTextContainer}>
-          <Text style={styles.textMobile}>Starter No: {starterData.starter1}</Text>
+          <Text style={styles.textMobile}>Starter No: {starter1}</Text>
         </View>
 
         <View style={styles.container}>
@@ -564,28 +521,11 @@ const MqttScreen = ({ userID }) => {
       </ScrollView>
     </SafeAreaView>
   );
-
-  // return (
-  //   <View style={styles.container}>
-  //             <View>
-  //         <Text style={styles.textMobile}>Starter No: {starterData.starter1}</Text>
-  //       </View>
-  //     <Text style={styles.cardTitle}>MQTT Publish and Subscribe</Text>
-  //     <TextInput
-  //       style={styles.textMobile}
-  //       placeholder="Enter message to publish"
-  //       value={message}
-  //       onChangeText={setMessage}
-  //     />
-  //     <Button title="Publish Message" onPress={handlePublish} />
-  //     <Text style={styles.cardTitle}>Received Message:</Text>
-  //     <Text style={styles.statusData}>{receivedMessage}</Text>
-  //   </View>
-  // );
 };
 
 
 export default MqttScreen;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
